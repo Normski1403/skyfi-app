@@ -2,7 +2,8 @@
 //
 // Web app:   GET /api/v1/state, GET /api/v1/stream (SSE), POST land/launch/autoland/sim
 // Panel:     GET /api/v1/status|environment|wifi, POST /api/v1/land — the Presto's
-//            WiFi fallback link (same contract as skyfiscreen/mock-server).
+//
+//	WiFi fallback link (same contract as skyfiscreen/mock-server).
 package api
 
 import (

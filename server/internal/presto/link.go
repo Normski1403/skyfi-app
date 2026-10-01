@@ -29,7 +29,11 @@ type Link struct {
 	Station *core.Station
 	WiFi    WiFiInfo
 	Debug   bool // log raw panel debug lines
+
+	notPanel map[string]bool // devices identified as something else (e.g. the Enviro hub)
 }
+
+var errNotPanel = errors.New("not the panel")
 
 // Run keeps (re)opening the panel's serial port until ctx is cancelled.
 func (l *Link) Run(ctx context.Context) {
@@ -40,18 +44,36 @@ func (l *Link) Run(ctx context.Context) {
 			continue
 		}
 		err := l.session(ctx, dev)
+		if errors.Is(err, errNotPanel) {
+			log.Printf("presto: %s is not the panel, skipping it", dev)
+			l.notPanel[dev] = true
+			continue
+		}
 		l.Station.PanelDisconnected(err)
 		log.Printf("presto: %s closed: %v", dev, err)
 		sleep(ctx, time.Second)
 	}
 }
 
+// find returns the first matching device not known to be something else.
+// Other Picos (the Enviro hub, when plugged in for flashing) match the same
+// glob; they're identified by their first line and skipped until replugged.
 func (l *Link) find() string {
-	m, _ := filepath.Glob(l.Glob)
-	if len(m) == 0 {
-		return ""
+	if l.notPanel == nil {
+		l.notPanel = map[string]bool{}
 	}
-	return m[0]
+	m, _ := filepath.Glob(l.Glob)
+	for dev := range l.notPanel {
+		if _, err := os.Stat(dev); err != nil {
+			delete(l.notPanel, dev) // unplugged: re-identify next time
+		}
+	}
+	for _, dev := range m {
+		if !l.notPanel[dev] {
+			return dev
+		}
+	}
+	return ""
 }
 
 func (l *Link) session(ctx context.Context, dev string) error {
@@ -60,8 +82,7 @@ func (l *Link) session(ctx context.Context, dev string) error {
 		return err
 	}
 	defer f.Close()
-	log.Printf("presto: opened %s", dev)
-	l.Station.PanelConnected(dev)
+	log.Printf("presto: opened %s, identifying", dev)
 
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -81,7 +102,7 @@ func (l *Link) session(ctx context.Context, dev string) error {
 	}
 
 	// Writer: status at 1 Hz and on every change (coalesced to ≤ 5 Hz).
-	go func() {
+	startWriter := func() {
 		changes, unsub := l.Station.Subscribe()
 		defer unsub()
 		tick := time.NewTicker(time.Second)
@@ -100,14 +121,24 @@ func (l *Link) session(ctx context.Context, dev string) error {
 				sleep(ctx, 200*time.Millisecond)
 			}
 		}
-	}()
+	}
 
 	// Reader: closing the file unblocks Scan when ctx ends.
 	go func() { <-ctx.Done(); f.Close() }()
 	sc := bufio.NewScanner(f)
 	sc.Buffer(make([]byte, 4096), 4096)
+	identified := false
 	for sc.Scan() {
-		l.handle(strings.TrimSpace(sc.Text()), send)
+		line := strings.TrimSpace(sc.Text())
+		if !identified && line != "" {
+			if strings.HasPrefix(line, "enviro-hub") {
+				return errNotPanel
+			}
+			identified = true
+			l.Station.PanelConnected(dev)
+			go startWriter()
+		}
+		l.handle(line, send)
 	}
 	if err := sc.Err(); err != nil {
 		return err

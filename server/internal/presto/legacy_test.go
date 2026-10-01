@@ -15,6 +15,9 @@ func TestParseLegacy(t *testing.T) {
 	if !ok || *w.Lux != 9.3 || w.Wind != nil {
 		t.Fatalf("light line: %+v", w)
 	}
+	if w, ok := parseLegacy("sensor_hub: temp nan"); ok || w.Temp != nil {
+		t.Fatal("NaN accepted (breaks JSON encoding)")
+	}
 	if _, ok := parseLegacy("net: wifi up"); ok {
 		t.Fatal("non-sensor line parsed")
 	}

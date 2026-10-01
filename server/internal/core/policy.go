@@ -8,12 +8,12 @@ import (
 // Policy holds the weather / safety thresholds that drive alerts and auto-land.
 type Policy struct {
 	AutoLand   bool          `json:"auto_land"`
-	WindWarn   float64       `json:"wind_warn"`   // m/s sustained
-	WindLand   float64       `json:"wind_land"`   // m/s sustained for SustainFor
-	GustWarn   float64       `json:"gust_warn"`   // m/s
-	GustLand   float64       `json:"gust_land"`   // m/s, immediate
-	BattWarn   float64       `json:"batt_warn"`   // %
-	BattLand   float64       `json:"batt_land"`   // %
+	WindWarn   float64       `json:"wind_warn"` // m/s sustained
+	WindLand   float64       `json:"wind_land"` // m/s sustained for SustainFor
+	GustWarn   float64       `json:"gust_warn"` // m/s
+	GustLand   float64       `json:"gust_land"` // m/s, immediate
+	BattWarn   float64       `json:"batt_warn"` // %
+	BattLand   float64       `json:"batt_land"` // %
 	SustainFor time.Duration `json:"-"`
 	WxStale    time.Duration `json:"-"`
 }

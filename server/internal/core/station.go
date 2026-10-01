@@ -249,6 +249,9 @@ func (s *Station) SimulateWeather(w *Weather, d time.Duration) {
 func (s *Station) UpdateWeather(u Weather, source string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	if u.Dir != nil && *u.Dir < 0 { // contract: -1 = unknown
+		u.Dir = nil
+	}
 	s.wx.merge(u)
 	s.wx.Source = source
 	s.wx.Updated = time.Now()

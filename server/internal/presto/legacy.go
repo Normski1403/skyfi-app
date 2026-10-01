@@ -1,6 +1,7 @@
 package presto
 
 import (
+	"math"
 	"regexp"
 	"strconv"
 
@@ -31,7 +32,7 @@ func parseLegacy(line string) (core.Weather, bool) {
 	found := false
 	num := func(s string) *float64 {
 		v, err := strconv.ParseFloat(s, 64)
-		if err != nil {
+		if err != nil || math.IsNaN(v) || math.IsInf(v, 0) {
 			return nil
 		}
 		found = true
