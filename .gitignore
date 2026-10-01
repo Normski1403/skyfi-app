@@ -43,3 +43,6 @@ Thumbs.db
 # Build artefacts
 *.o
 *.a
+
+# Go server build output
+/build/

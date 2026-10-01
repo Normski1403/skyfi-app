@@ -26,6 +26,13 @@ drone autopilot (MAVLink)    ops centre (cloud)
 
 The device serves; the phone renders. The Pi has near-zero compute load from the frontend.
 
+## Ground-station server (running now)
+
+`server/` is the Go daemon that runs on the Pi (`4our.local`). It serves a live ground-station
+web app, talks to the Presto panel over USB, simulates the drone and auto-lands in bad weather.
+See [`server/README.md`](server/README.md) and the panel protocol in
+[`contracts/presto-link.md`](contracts/presto-link.md). Deploy with `deploy/deploy.sh`.
+
 ## Prerequisites
 
 Node.js is managed via [nvm](https://github.com/nvm-sh/nvm) — this works the same on a laptop and on a Raspberry Pi (ARM64).
@@ -108,6 +115,9 @@ See [`DEPLOYMENT-ARCHITECTURE.md`](DEPLOYMENT-ARCHITECTURE.md) for the full rati
 ## Repository layout
 
 ```
+server/       Go ground-station daemon (skyfid) + embedded web app
+contracts/    Presto <-> Pi serial protocol (shared with zimchaa/skyfiscreen)
+deploy/       systemd unit + deploy script for the Pi
 app/          Production app (Vite + React + TypeScript) — Phase 0+
 prototype/    Claude Design prototype (read-only reference)
   src/          Wizard JSX source components

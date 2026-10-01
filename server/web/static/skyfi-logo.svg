@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 120" role="img" aria-label="Sky-Fi">
+  
+  <g transform="translate(48 22) scale(-1 1)">
+    <path d="M30 0C13.4 0 0 12.6 0 28.2 0 42 9.6 53.4 23 56.2c1.2.2 1.6 1.1 1 2.4-2.4 5-6.4 8.8-12 11.4-1.1.5-.8 1.9.5 1.9 18.2-.2 34-13.6 34-32.5C46 13.5 39.4 0 30 0Z" fill="#E60000"></path>
+  </g>
+  
+  <text x="56" y="86" font-family="&#39;Helvetica Neue&#39;, Arial, sans-serif" font-weight="800" font-size="68" letter-spacing="-3" fill="#1A1A1A">sky-fi</text>
+  
+  <g transform="translate(196 0) scale(0.58)" stroke="#E60000" fill="#E60000">
+    <line x1="32" y1="40" x2="32" y2="74" stroke-width="3"></line>
+    <g fill="none" stroke-width="5" stroke-linecap="round">
+      <line x1="32" y1="32" x2="14" y2="14"></line>
+      <line x1="32" y1="32" x2="50" y2="14"></line>
+      <line x1="32" y1="32" x2="14" y2="50"></line>
+      <line x1="32" y1="32" x2="50" y2="50"></line>
+      <circle cx="13" cy="13" r="10"></circle>
+      <circle cx="51" cy="13" r="10"></circle>
+      <circle cx="13" cy="51" r="10"></circle>
+      <circle cx="51" cy="51" r="10"></circle>
+    </g>
+    <rect x="24" y="24" width="16" height="16" rx="5"></rect>
+  </g>
+</svg>

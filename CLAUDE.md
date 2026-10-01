@@ -63,6 +63,10 @@ Per-step state lives in `allData[stepId]` keyed by step id. `__prefilled: true` 
 
 `design-tokens.css` and `--vf-*` CSS variables encode the Vodafone brand palette. The `data-theme` attribute on the root switches light/dark. Do not hardcode colours; use the token variables.
 
+## Ground-station server (`server/`)
+
+`skyfid` (Go) runs on the Pi at `4our.local` as systemd unit `skyfid`. Deploy with `deploy/deploy.sh` (cross-compiles on the laptop; Go lives in `~/.local/go`). **No Node on the Pi**: the web app in `server/web/static` is plain HTML/CSS/JS, embedded in the binary. The Presto panel protocol is `contracts/presto-link.md`; change it together with `../skyfiscreen` in the same push. All LAND requests (web, panel, auto) go through `core.Station.Land`.
+
 ## Development environment
 
 Node.js is managed via **nvm** — use `nvm install` / `nvm use` inside `app/` to activate Node 22 LTS (pinned in `app/.nvmrc`). This applies on both the development laptop and the Raspberry Pi. Do not assume a system Node install exists.

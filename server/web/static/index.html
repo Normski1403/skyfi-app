@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#E60000">
+<title>Sky-Fi Ground Station</title>
+<link rel="icon" href="skyfi-mark.svg">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <img src="skyfi-mark.svg" alt="" class="mark">
+  <div class="title">
+    <h1>Sky-Fi Ground Station</h1>
+    <p id="hostline">connecting…</p>
+  </div>
+  <span class="pill" id="live">offline</span>
+</header>
+
+<div class="banner" id="banner" data-sev="ok">
+  <strong id="sys">—</strong><span id="topAlert"></span>
+</div>
+
+<main>
+  <section class="card hero">
+    <div class="hero-head">
+      <div>
+        <div class="label">Drone</div>
+        <div class="state" id="droneState">—</div>
+      </div>
+      <div class="alt"><span id="alt">0.0</span><small> m</small><div class="label" id="target">target —</div></div>
+    </div>
+
+    <div class="meter" aria-label="Battery">
+      <div class="meter-row"><span class="label">Battery</span><span id="battTxt">—</span></div>
+      <div class="bar"><div id="battBar"></div></div>
+    </div>
+    <dl class="kv">
+      <div><dt>Tether tension</dt><dd id="tether">—</dd></div>
+      <div><dt>Power</dt><dd id="power">—</dd></div>
+    </dl>
+
+    <div class="actions">
+      <button class="btn secondary" id="launchBtn">Launch</button>
+      <button class="btn land" id="landBtn" aria-describedby="landHint">
+        <span class="fill"></span><span class="txt">HOLD TO LAND</span>
+      </button>
+    </div>
+    <p class="hint" id="landHint">Same command as the LAND NOW button on the panel.</p>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Weather</h2><span class="sub" id="wxSrc">—</span></div>
+    <div class="tiles" id="wxTiles"></div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Auto-land</h2>
+      <label class="switch"><input type="checkbox" id="autoToggle"><span></span></label>
+    </div>
+    <p class="sub" id="autoTxt">—</p>
+    <ul class="alerts" id="alerts"></ul>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Presto panel</h2><span class="pill" id="panelPill">—</span></div>
+    <dl class="kv">
+      <div><dt>Firmware</dt><dd id="fw">—</dd></div>
+      <div><dt>Protocol</dt><dd id="proto">—</dd></div>
+      <div><dt>Device</dt><dd id="device" class="mono">—</dd></div>
+    </dl>
+    <p class="mono log" id="lastLog"></p>
+  </section>
+
+  <section class="card wide">
+    <div class="card-head"><h2>Events</h2></div>
+    <ol class="events" id="events"></ol>
+  </section>
+
+  <details class="card wide sim">
+    <summary>Simulator</summary>
+    <p class="sub">The drone is simulated until the autopilot link lands. These inject faults.</p>
+    <div class="sim-row">
+      <button class="btn secondary" data-sim='{"power_fault":true}'>Cut tether power</button>
+      <button class="btn secondary" data-sim='{"power_fault":false}'>Restore power</button>
+      <button class="btn secondary" data-sim='{"weather":{"wind":12,"gust":13},"for_s":60}'>High wind 60s</button>
+      <button class="btn secondary" data-sim='{"weather":{"wind":6,"gust":17},"for_s":20}'>Gust 20s</button>
+      <button class="btn secondary" data-sim='{"weather":null}'>Real weather</button>
+    </div>
+  </details>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
