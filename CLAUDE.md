@@ -65,7 +65,7 @@ Per-step state lives in `allData[stepId]` keyed by step id. `__prefilled: true` 
 
 ## Ground-station server (`server/`)
 
-`skyfid` (Go) runs on the Pi at `4our.local` as systemd unit `skyfid`. Deploy with `deploy/deploy.sh` (cross-compiles on the laptop; Go lives in `~/.local/go`). **No Node on the Pi**: the web app in `server/web/static` is plain HTML/CSS/JS, embedded in the binary. The Presto panel protocol is `contracts/presto-link.md`; change it together with `../skyfiscreen` in the same push. All LAND requests (web, panel, auto) go through `core.Station.Land`.
+`skyfid` (Go) runs on the Pi at `4our.local` as systemd unit `skyfid`. Deploy with `deploy/deploy.sh` (cross-compiles on the laptop; Go lives in `~/.local/go`). **No Node on the Pi**: the web app in `server/web/static` is plain HTML/CSS/JS, embedded in the binary. The Presto panel protocol is `contracts/presto-link.md`; change it together with `../skyfiscreen` in the same push. All LAND requests (web, panel, auto) go through `core.Station.Land`. Launch goes through the pre-flight gate (`internal/preflight`): procedures, sites and operators are configuration (`server/config`), validated server-side only; never hardcode wizard steps or rules in the web app. Backlog lives in GitHub issues (#1 cloud admin, #2 cloud sync, #3 forecast weather).
 
 ## Development environment
 
