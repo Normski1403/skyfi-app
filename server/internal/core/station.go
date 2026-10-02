@@ -64,6 +64,15 @@ type Event struct {
 	Msg    string    `json:"msg"`
 }
 
+// LandInfo describes the most recent LAND command (any source).
+type LandInfo struct {
+	Seq    int64  `json:"seq"`
+	Cmd    string `json:"cmd"`
+	Source string `json:"source"`
+	Reason string `json:"reason"`
+	Result string `json:"result"` // landing | already landing | already grounded
+}
+
 // Snapshot is the full state as served to the web app and used for Presto status.
 type Snapshot struct {
 	Time    time.Time `json:"time"`
@@ -78,6 +87,7 @@ type Snapshot struct {
 	Panel   Panel     `json:"panel"`
 	Policy  Policy    `json:"policy"`
 	Events  []Event   `json:"events"`
+	Land    *LandInfo `json:"last_land,omitempty"`
 }
 
 const (
@@ -104,6 +114,8 @@ type Station struct {
 	landIDs map[string]string // panel land id -> command id (idempotent retries)
 
 	hist history
+
+	lastLand *LandInfo
 
 	subs map[chan struct{}]struct{}
 }
@@ -193,6 +205,11 @@ func (s *Station) landLocked(source, reason, dedupeKey string) (cmdID string, ac
 		text += ": " + reason
 	}
 	s.logLocked(kind, source, text+" ["+cmdID+"]")
+	seq := int64(1)
+	if s.lastLand != nil {
+		seq = s.lastLand.Seq + 1
+	}
+	s.lastLand = &LandInfo{Seq: seq, Cmd: cmdID, Source: source, Reason: reason, Result: msg}
 	s.notifyLocked()
 	return cmdID, true, msg
 }
@@ -360,6 +377,7 @@ func (s *Station) Snapshot() Snapshot {
 		Time: now, Host: s.host, IPs: localIPs(), Uptime: int64(now.Sub(s.started).Seconds()),
 		Sys: worst(s.alerts), Alerts: append([]Alert{}, s.alerts...),
 		Drone: s.drone, Weather: wx, WxAge: age, Panel: s.panel, Policy: s.policy, Events: ev,
+		Land: s.lastLand,
 	}
 }
 

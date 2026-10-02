@@ -31,6 +31,7 @@ Any change here needs a matching change in the firmware, in the same push.
 |---|---|---|
 | `status` | 1 Hz, and right after any state change | `sys` (`ok`\|`degraded`\|`fault`), `drone` (`grounded`\|`ascending`\|`airborne`\|`descending`), `batt` %, `alt` m, `tgt` target altitude m, `tether` kg, `power` (`tether`\|`battery`), `auto` (`armed`\|`off`), `ip`, `host`, `msg` (≤ 40 chars, the top alert or `""`) |
 | `ack` | reply to `land` | `id` (echoed), `ok` (bool), `cmd` (server command id), `err` (if not ok) |
+| `landing` | a LAND was commanded from anywhere but this panel | `src` (`web`\|`auto`\|`presto-wifi`), `cmd`, `result` (`landing`\|`already landing`\|`already grounded`). The panel alerts (beeps, flashes, LANDING) as if its own button had been pressed |
 | `wifi` | after `hello` | `ssid`, `pw`, `qr` (WiFi-join QR payload) |
 
 ## Semantics

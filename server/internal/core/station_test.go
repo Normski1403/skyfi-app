@@ -90,3 +90,16 @@ func TestHistorySampling(t *testing.T) {
 		t.Fatalf("since filter: %d samples", len(got))
 	}
 }
+
+func TestLastLandRecorded(t *testing.T) {
+	s := flying(t)
+	s.Land("web", "operator", "")
+	ll := s.Snapshot().Land
+	if ll == nil || ll.Seq != 1 || ll.Source != "web" || ll.Result != "landing" {
+		t.Fatalf("last land %+v", ll)
+	}
+	s.Land("auto", "gust", "")
+	if ll := s.Snapshot().Land; ll.Seq != 2 || ll.Result != "already landing" {
+		t.Fatalf("second land %+v", ll)
+	}
+}

@@ -108,8 +108,21 @@ func (l *Link) session(ctx context.Context, dev string) error {
 		tick := time.NewTicker(time.Second)
 		defer tick.Stop()
 		_ = l.sendWiFi(send)
+		// LANDs issued elsewhere (web, auto) are announced so the panel alerts
+		// too; start from the current one so nothing old is replayed.
+		var landSent int64
+		if ll := l.Station.Snapshot().Land; ll != nil {
+			landSent = ll.Seq
+		}
 		for {
-			if err := send(statusMsg(l.Station.Snapshot())); err != nil {
+			snap := l.Station.Snapshot()
+			if ll := snap.Land; ll != nil && ll.Seq > landSent {
+				landSent = ll.Seq
+				if ll.Source != "presto-usb" {
+					_ = send(map[string]any{"t": "landing", "src": ll.Source, "cmd": ll.Cmd, "result": ll.Result})
+				}
+			}
+			if err := send(statusMsg(snap)); err != nil {
 				cancel()
 				return
 			}

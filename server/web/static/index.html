@@ -36,17 +36,9 @@
     <div class="tiles" id="tiles"></div>
   </section>
 
-  <!-- TRENDS: one metric, last hour; selector layout is switchable -->
+  <!-- TRENDS: metric list with live values, last hour of the selected one -->
   <section id="tab-trends" class="tab" role="tabpanel" hidden>
-    <div class="trend-head">
-      <span class="sub">Selector</span>
-      <div class="seg" id="trendStyle">
-        <button data-style="chips" aria-pressed="true">Chips</button>
-        <button data-style="list">List</button>
-        <button data-style="groups">Groups</button>
-      </div>
-    </div>
-    <div class="trend" id="trend" data-style="chips">
+    <div class="trend" id="trend">
       <div class="picker" id="picker"></div>
       <div class="card chart-card">
         <div class="chart-title"><strong id="trendName">—</strong><span id="trendNow"></span></div>

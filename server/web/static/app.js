@@ -102,63 +102,31 @@ function renderSparks() {
   }
 }
 
-// ── TRENDS (selector layout is switchable: chips | list | groups) ───
-let trendMetric = 'wind', trendStyle = 'chips', trendGroup = 'weather';
-try { trendStyle = localStorage.getItem('trendStyle') || trendStyle; } catch {}
+// ── TRENDS: metric list with live values (same layout as the panel) ──
+let trendMetric = 'wind';
 
 function buildPicker() {
-  const pk = $('picker');
-  pk.replaceChildren();
-  const metricBtn = (m) => {
+  $('picker').replaceChildren(...METRICS.map((m) => {
     const b = document.createElement('button');
     b.dataset.k = m.k;
     b.innerHTML = '<span class="n"></span><span class="val"></span>';
     b.querySelector('.n').textContent = m.name;
     b.onclick = () => selectMetric(m.k);
     return b;
-  };
-  if (trendStyle === 'groups') {
-    const g = document.createElement('div'); g.className = 'groups';
-    for (const [k, label] of [['weather', 'WEATHER'], ['drone', 'DRONE']]) {
-      const b = document.createElement('button');
-      b.textContent = label; b.dataset.group = k;
-      b.onclick = () => { trendGroup = k; buildPicker(); selectMetric(METRICS.find((m) => m.group === k).k); };
-      g.append(b);
-    }
-    const row = document.createElement('div'); row.className = 'grp';
-    METRICS.filter((m) => m.group === trendGroup).forEach((m) => row.append(metricBtn(m)));
-    pk.append(g, row);
-  } else {
-    METRICS.forEach((m) => pk.append(metricBtn(m)));
-  }
-  $('trend').dataset.style = trendStyle;
-  document.querySelectorAll('#trendStyle button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.style === trendStyle));
+  }));
   markPicker();
 }
 function markPicker() {
-  document.querySelectorAll('#picker [data-k]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.k === trendMetric));
-  document.querySelectorAll('#picker [data-group]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.group === trendGroup));
-  if (!state) return;
-  const live = trendStyle !== 'chips';   // list/groups show live values beside names
   document.querySelectorAll('#picker [data-k]').forEach((b) => {
-    const m = METRICS.find((x) => x.k === b.dataset.k);
-    b.querySelector('.val').textContent = live ? fmt(m, current(state, m)[0]) : '';
+    b.setAttribute('aria-pressed', b.dataset.k === trendMetric);
+    if (state) b.querySelector('.val').textContent = fmt(METRICS.find((x) => x.k === b.dataset.k), current(state, METRICS.find((x) => x.k === b.dataset.k))[0]);
   });
 }
 function selectMetric(k) {
   trendMetric = k;
-  const m = METRICS.find((x) => x.k === k);
-  if (trendStyle === 'groups' && m.group !== trendGroup) { trendGroup = m.group; buildPicker(); }
   markPicker();
   renderTrend();
 }
-document.querySelectorAll('#trendStyle button').forEach((b) => {
-  b.onclick = () => {
-    trendStyle = b.dataset.style;
-    try { localStorage.setItem('trendStyle', trendStyle); } catch {}
-    buildPicker(); renderTrend();
-  };
-});
 function renderTrend() {
   const m = METRICS.find((x) => x.k === trendMetric);
   const vals = hist[m.k].slice(-HIST_N), sc = scale(vals, m.span);

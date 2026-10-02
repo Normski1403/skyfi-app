@@ -90,31 +90,21 @@ main { padding: 12px 16px; max-width: 1100px; margin: 0 auto; }
 .spark { fill: none; stroke: var(--aqua); stroke-width: 2; vector-effect: non-scaling-stroke; }
 
 /* ── TRENDS ── */
-.trend-head { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
-.seg { display: inline-flex; background: var(--surface); border-radius: 10px; padding: 3px; gap: 2px; }
-.seg button { border: 0; background: none; color: var(--muted); padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: .85rem; }
-.seg button[aria-pressed=true] { background: var(--surface-hi); color: var(--text); }
-
 .trend { display: grid; gap: 12px; }
-.picker { display: flex; gap: 6px; flex-wrap: wrap; }
+/* Metric list down the side (live values beside each), chart beside it */
+.trend { grid-template-columns: minmax(150px, 210px) 1fr; align-items: start; }
+.picker { display: flex; flex-direction: column; gap: 6px; }
 .picker button {
-  border: 0; background: var(--surface); color: var(--muted); border-radius: 999px;
-  padding: 8px 14px; cursor: pointer; font-weight: 700; font-size: .85rem; min-height: 40px;
+  border: 0; background: var(--surface); color: var(--muted); border-radius: 10px; cursor: pointer;
+  padding: 10px 12px; min-height: 44px; font-weight: 700; font-size: .85rem;
+  display: flex; justify-content: space-between; align-items: baseline; gap: 8px; text-align: left;
 }
-.picker button[aria-pressed=true] { background: var(--teal); color: #fff; }
-.picker .grp { width: 100%; display: flex; gap: 6px; flex-wrap: wrap; }
-.picker .val { color: var(--aqua); font-weight: 400; margin-left: 6px; }
-.picker button[aria-pressed=true] .val { color: #fff; }
-
-/* List layout: metrics down the side, live values beside each */
-.trend[data-style=list] { grid-template-columns: minmax(140px, 200px) 1fr; align-items: start; }
-.trend[data-style=list] .picker { flex-direction: column; flex-wrap: nowrap; }
-.trend[data-style=list] .picker button { border-radius: 10px; display: flex; justify-content: space-between; text-align: left; }
-@media (max-width: 560px) { .trend[data-style=list] { grid-template-columns: 1fr; }
-  .trend[data-style=list] .picker { display: grid; grid-template-columns: 1fr 1fr; } }
-/* Groups layout: WEATHER | DRONE, then that group's metrics */
-.picker .groups { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-.picker .groups button { border-radius: 10px; }
+.picker button[aria-pressed=true] { background: var(--teal); color: #fff; box-shadow: inset 4px 0 0 var(--aqua); }
+.picker .val { color: var(--text); font-weight: 400; white-space: nowrap; }
+@media (max-width: 560px) {
+  .trend { grid-template-columns: 1fr; }
+  .picker { display: grid; grid-template-columns: 1fr 1fr; }
+}
 
 .chart-title { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 8px; }
 .chart-title strong { font-size: 1.1rem; }
