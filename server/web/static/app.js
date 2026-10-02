@@ -217,6 +217,7 @@ function render() {
   $('pill').dataset.sev = landing ? 'danger' : SEV[s.sys];
   $('panelLink').toggleAttribute('data-on', s.panel.alive);
   renderTiles(); renderStation(); renderEvents(); markPicker();
+  renderSections(s);
   if (window.pfOnState) window.pfOnState(s);
   $('trendNow').textContent = fmt(METRICS.find((x) => x.k === trendMetric), current(s, METRICS.find((x) => x.k === trendMetric))[0]);
 }
@@ -245,7 +246,36 @@ async function pullHistory() {
   } catch {}
 }
 
-// ── tabs ─────────────────────────────────────────────────────────────
+// ── stages: 1 Pre-flight -> 2 Flight ────────────────────────────────
+// Opens on Pre-flight when nothing permits a launch and the drone is down;
+// otherwise on Flight. Decided once, from the first live snapshot.
+let sectionChosen = false;
+function showSection(name) {
+  sectionChosen = true;
+  document.querySelectorAll('[data-section]').forEach((b) => {
+    if (b.dataset.section === name) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
+  });
+  $('sec-preflight').hidden = name !== 'preflight';
+  $('sec-flight').hidden = name !== 'flight';
+  window.scrollTo({ top: 0 });
+}
+document.querySelectorAll('[data-section]').forEach((b) => { b.onclick = () => showSection(b.dataset.section); });
+document.querySelectorAll('[data-section-go]').forEach((b) => { b.onclick = () => showSection(b.dataset.sectionGo); });
+
+function renderSections(s) {
+  const c = s.clearance || { state: 'none' }, d = s.drone;
+  const t = (iso) => new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const pfBtn = document.querySelector('[data-section=preflight]');
+  pfBtn.toggleAttribute('data-ok', c.state === 'cleared');
+  pfBtn.toggleAttribute('data-warn', c.state === 'override');
+  $('secPfSub').textContent = c.state === 'cleared' ? `Cleared until ${t(c.expires_at)}`
+    : c.state === 'override' ? `Override until ${t(c.expires_at)}` : 'Required before launch';
+  $('secFlSub').textContent = d.state === 'grounded' ? 'Drone grounded' : `${d.state[0].toUpperCase()}${d.state.slice(1)} · ${d.alt.toFixed(0)} m`;
+  $('noClrBanner').hidden = c.state !== 'none' || d.state !== 'grounded';
+  if (!sectionChosen) showSection(c.state === 'none' && d.state === 'grounded' ? 'preflight' : 'flight');
+}
+
+// ── tabs (Flight section) ────────────────────────────────────────────
 function showTab(name) {
   document.querySelectorAll('.tabs button').forEach((b) => b.setAttribute('aria-selected', b.dataset.tab === name));
   document.querySelectorAll('.tab').forEach((t) => { t.hidden = t.id !== `tab-${name}`; });
@@ -294,6 +324,7 @@ document.querySelectorAll('[data-sim]').forEach((b) => { b.onclick = () => post(
 
 let initialTab = 'dash';
 try { initialTab = localStorage.getItem('tab') || 'dash'; } catch {}
+if (!['dash', 'trends', 'station', 'log'].includes(initialTab)) initialTab = 'dash';
 buildPicker();
 showTab(initialTab);
 connect();

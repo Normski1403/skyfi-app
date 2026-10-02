@@ -44,6 +44,9 @@ function pfRenderClearance(c) {
     $('clrState').textContent = 'LAUNCH BLOCKED';
     $('clrDetail').textContent = 'No valid pre-flight. Complete one for this site, or use an emergency override.';
   }
+  $('pfFlyBtn').hidden = c.state === 'none';
+  $('pfStartBtn').className = c.state === 'none' ? 'btn primary' : 'btn secondary';
+  $('pfStartBtn').textContent = c.state === 'none' ? 'Start pre-flight' : 'New pre-flight';
   const chip = $('clrChip');
   chip.dataset.clr = c.state;
   chip.textContent = c.state === 'cleared' ? `CLEARED · ${fmtTime(c.expires_at)}` : c.state === 'override' ? 'OVERRIDE' : 'NO PRE-FLIGHT';
@@ -108,6 +111,8 @@ $('ovGo').onclick = async () => {
   $('overrideDlg').close();
   $('ovReason').value = '';
   pfRenderClearance(r.data);
+  showSection('flight');          // overrides are for emergencies: straight to flying
+  showTab('station');
 };
 
 // ── wizard ───────────────────────────────────────────────────────────
@@ -166,7 +171,10 @@ function renderNav(sealed) {
       el('div', { class: 'big' }, v.run.status === 'complete' ? 'SEALED' : v.run.status.toUpperCase()),
       v.run.expires_at ? el('div', {}, `Valid until ${fmtDate(v.run.expires_at)} · ceiling ${v.run.max_alt_m} m · target ${v.run.target_alt_m} m`) : null,
       el('div', { class: 'hash' }, `SHA-256 ${v.run.seal_hash}`),
-      el('div', { class: 'sub' }, `Signed by this ground station · cloud sync: ${v.run.sync_status}`)),
+      el('div', { class: 'sub' }, `Signed by this ground station · cloud sync: ${v.run.sync_status}`),
+      v.run.status === 'complete' && pf.clearance?.run_id === v.run.id
+        ? el('div', { class: 'pf-continue' }, el('button', { class: 'btn primary', onclick: () => { showSection('flight'); showTab('station'); } }, 'Continue to flight →'))
+        : null),
       el('div', { class: 'wz-nav' }, back,
         el('a', { class: 'btn secondary', href: `api/v1/preflights/${v.run.id}/record` }, 'Download record'),
         el('button', { class: 'btn secondary', disabled: last, onclick: () => { pf.step++; renderWizard(); } }, 'Next')));
@@ -183,6 +191,8 @@ async function sealRun() {
   const r = await pfApi('POST', `preflights/${pf.view.run.id}/complete`);
   if (!r.ok) return alert(r.error);
   pf.view = r.data;
+  const c = await pfApi('GET', 'preflight/clearance');
+  if (c.ok) pfRenderClearance(c.data);
   renderWizard();
   pfHistory();
 }
@@ -370,7 +380,6 @@ function renderSignature(val, set, ro) {
 }
 
 // ── init ─────────────────────────────────────────────────────────────
-document.querySelectorAll('[data-goto]').forEach((b) => { b.onclick = () => showTab(b.dataset.goto); });
 (async () => {
   const r = await pfApi('GET', 'preflight/config');
   if (!r.ok) { $('clrState').textContent = 'PRE-FLIGHT UNAVAILABLE'; $('clrDetail').textContent = r.error; return; }

@@ -19,100 +19,18 @@
   <span class="pill" id="pill" data-sev="warn">CONNECTING</span>
 </header>
 
-<nav class="tabs" role="tablist" aria-label="Sections">
-  <button role="tab" data-tab="dash" aria-selected="true">
-    <svg viewBox="0 0 24 24"><path d="M3 3h8v8H3zM13 3h8v8h-8zM3 13h8v8H3zM13 13h8v8h-8z"/></svg>Dash</button>
-  <button role="tab" data-tab="trends">
-    <svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8" fill="none" stroke-width="2.5"/></svg>Trends</button>
-  <button role="tab" data-tab="station">
-    <svg viewBox="0 0 24 24"><circle cx="5" cy="5" r="3"/><circle cx="19" cy="5" r="3"/><circle cx="5" cy="19" r="3"/><circle cx="19" cy="19" r="3"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>Station</button>
-  <button role="tab" data-tab="preflight">
-    <svg viewBox="0 0 24 24"><path d="M9 4h6v3H9zM6 5h2v2h8V5h2v16H6zM9 12l2 2 4-4" fill="none" stroke-width="2"/></svg>Pre-flight</button>
-  <button role="tab" data-tab="log">
-    <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10" fill="none" stroke-width="2.5"/></svg>Log</button>
+<nav class="sections" aria-label="Stages">
+  <button data-section="preflight" aria-current="step">
+    <span class="num">1</span><span><b>Pre-flight</b><small id="secPfSub">—</small></span></button>
+  <span class="sec-link" aria-hidden="true"></span>
+  <button data-section="flight">
+    <span class="num">2</span><span><b>Flight</b><small id="secFlSub">—</small></span></button>
 </nav>
 
-<main>
-  <!-- DASH: same 3x3 tiles as the panel -->
-  <section id="tab-dash" class="tab" role="tabpanel">
-    <div class="tiles" id="tiles"></div>
-  </section>
-
-  <!-- TRENDS: metric list with live values, last hour of the selected one -->
-  <section id="tab-trends" class="tab" role="tabpanel" hidden>
-    <div class="trend" id="trend">
-      <div class="picker" id="picker"></div>
-      <div class="card chart-card">
-        <div class="chart-title"><strong id="trendName">—</strong><span id="trendNow"></span></div>
-        <div class="chart-wrap">
-          <span class="axis max" id="trendMax"></span>
-          <svg id="trendChart" viewBox="0 0 600 220" preserveAspectRatio="none"></svg>
-          <span class="axis min" id="trendMin"></span>
-        </div>
-        <div class="time-axis"><span>−60 min</span><span>−30</span><span>now</span></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- STATION: visual drone + ground-station status -->
-  <section id="tab-station" class="tab" role="tabpanel" hidden>
-    <div class="card station-hero">
-      <div>
-        <div class="label">Drone</div>
-        <div class="state" id="droneState">—</div>
-        <div class="sub" id="topAlert"></div>
-      </div>
-      <div class="chips">
-        <span class="chip" id="autoChip">AUTO-LAND —</span>
-        <button class="chip" id="clrChip" data-goto="preflight">PRE-FLIGHT —</button>
-      </div>
-    </div>
-
-    <div class="gauges">
-      <div class="card gauge">
-        <div class="label">Altitude</div>
-        <div class="altbar"><div class="target" id="altTarget"></div><div class="fill" id="altFill"></div></div>
-        <div class="gval"><span id="alt">0</span> m</div>
-        <div class="sub" id="altTgt">target —</div>
-      </div>
-      <div class="card gauge">
-        <div class="label">Battery</div>
-        <svg class="ring" viewBox="0 0 120 120"><circle cx="60" cy="60" r="50" class="track"/><circle cx="60" cy="60" r="50" class="arc" id="battArc"/></svg>
-        <div class="gval ring-val"><span id="batt">—</span>%</div>
-        <div class="sub" id="power">—</div>
-      </div>
-      <div class="card gauge">
-        <div class="label">Tether</div>
-        <svg class="ring" viewBox="0 0 120 120"><circle cx="60" cy="60" r="50" class="track"/><circle cx="60" cy="60" r="50" class="arc" id="tetherArc"/></svg>
-        <div class="gval ring-val"><span id="tether">—</span> kg</div>
-        <div class="sub">of 25 kg</div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-head"><h2>Auto-land</h2>
-        <label class="switch"><input type="checkbox" id="autoToggle"><span></span></label></div>
-      <p class="sub" id="autoTxt">—</p>
-      <ul class="alerts" id="alerts"></ul>
-      <button class="btn secondary" id="launchBtn">Launch</button>
-    </div>
-
-    <div class="card">
-      <div class="card-head"><h2>Ground station</h2></div>
-      <dl class="kv">
-        <div><dt>Host</dt><dd id="host">—</dd></div>
-        <div><dt>IP</dt><dd id="ips">—</dd></div>
-        <div><dt>Uptime</dt><dd id="uptime">—</dd></div>
-        <div><dt>Panel</dt><dd id="panelState">—</dd></div>
-        <div><dt>Firmware</dt><dd id="fw">—</dd></div>
-        <div><dt>Weather</dt><dd id="wxSrc">—</dd></div>
-      </dl>
-      <p class="mono log" id="lastLog"></p>
-    </div>
-  </section>
-
+<div id="sec-preflight" class="section">
+  <main id="pfMain">
   <!-- PRE-FLIGHT: config-driven wizard; a sealed one clears launch -->
-  <section id="tab-preflight" class="tab" role="tabpanel" hidden>
+  <section id="tab-preflight" class="pf-stage">
     <div class="card clearance" id="clrCard" data-state="none">
       <div class="clr-main">
         <div class="label">Launch clearance</div>
@@ -120,6 +38,7 @@
         <div class="sub" id="clrDetail"></div>
       </div>
       <div class="clr-actions">
+        <button class="btn primary" id="pfFlyBtn" data-section-go="flight" hidden>Go to flight →</button>
         <button class="btn primary" id="pfStartBtn">Start pre-flight</button>
         <button class="btn danger-ghost" id="pfOverrideBtn">Emergency override</button>
       </div>
@@ -167,6 +86,104 @@
     </dialog>
   </section>
 
+  </main>
+</div>
+
+<div id="sec-flight" class="section" hidden>
+<div class="block-banner" id="noClrBanner" hidden>
+  <span><b>Launch blocked</b> · no valid pre-flight for this site</span>
+  <button class="btn small primary" data-section-go="preflight">Go to pre-flight</button>
+</div>
+<nav class="tabs" role="tablist" aria-label="Flight">
+  <button role="tab" data-tab="dash" aria-selected="true">
+    <svg viewBox="0 0 24 24"><path d="M3 3h8v8H3zM13 3h8v8h-8zM3 13h8v8H3zM13 13h8v8h-8z"/></svg>Dash</button>
+  <button role="tab" data-tab="trends">
+    <svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8" fill="none" stroke-width="2.5"/></svg>Trends</button>
+  <button role="tab" data-tab="station">
+    <svg viewBox="0 0 24 24"><circle cx="5" cy="5" r="3"/><circle cx="19" cy="5" r="3"/><circle cx="5" cy="19" r="3"/><circle cx="19" cy="19" r="3"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>Station</button>
+  <button role="tab" data-tab="log">
+    <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10" fill="none" stroke-width="2.5"/></svg>Log</button>
+</nav>
+
+<main>
+  <!-- DASH: same 3x3 tiles as the panel -->
+  <section id="tab-dash" class="tab" role="tabpanel">
+    <div class="tiles" id="tiles"></div>
+  </section>
+
+  <!-- TRENDS: metric list with live values, last hour of the selected one -->
+  <section id="tab-trends" class="tab" role="tabpanel" hidden>
+    <div class="trend" id="trend">
+      <div class="picker" id="picker"></div>
+      <div class="card chart-card">
+        <div class="chart-title"><strong id="trendName">—</strong><span id="trendNow"></span></div>
+        <div class="chart-wrap">
+          <span class="axis max" id="trendMax"></span>
+          <svg id="trendChart" viewBox="0 0 600 220" preserveAspectRatio="none"></svg>
+          <span class="axis min" id="trendMin"></span>
+        </div>
+        <div class="time-axis"><span>−60 min</span><span>−30</span><span>now</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATION: visual drone + ground-station status -->
+  <section id="tab-station" class="tab" role="tabpanel" hidden>
+    <div class="card station-hero">
+      <div>
+        <div class="label">Drone</div>
+        <div class="state" id="droneState">—</div>
+        <div class="sub" id="topAlert"></div>
+      </div>
+      <div class="chips">
+        <span class="chip" id="autoChip">AUTO-LAND —</span>
+        <button class="chip" id="clrChip" data-section-go="preflight">PRE-FLIGHT —</button>
+      </div>
+    </div>
+
+    <div class="gauges">
+      <div class="card gauge">
+        <div class="label">Altitude</div>
+        <div class="altbar"><div class="target" id="altTarget"></div><div class="fill" id="altFill"></div></div>
+        <div class="gval"><span id="alt">0</span> m</div>
+        <div class="sub" id="altTgt">target —</div>
+      </div>
+      <div class="card gauge">
+        <div class="label">Battery</div>
+        <svg class="ring" viewBox="0 0 120 120"><circle cx="60" cy="60" r="50" class="track"/><circle cx="60" cy="60" r="50" class="arc" id="battArc"/></svg>
+        <div class="gval ring-val"><span id="batt">—</span>%</div>
+        <div class="sub" id="power">—</div>
+      </div>
+      <div class="card gauge">
+        <div class="label">Tether</div>
+        <svg class="ring" viewBox="0 0 120 120"><circle cx="60" cy="60" r="50" class="track"/><circle cx="60" cy="60" r="50" class="arc" id="tetherArc"/></svg>
+        <div class="gval ring-val"><span id="tether">—</span> kg</div>
+        <div class="sub">of 25 kg</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Auto-land</h2>
+        <label class="switch"><input type="checkbox" id="autoToggle"><span></span></label></div>
+      <p class="sub" id="autoTxt">—</p>
+      <ul class="alerts" id="alerts"></ul>
+      <button class="btn secondary" id="launchBtn">Launch</button>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Ground station</h2></div>
+      <dl class="kv">
+        <div><dt>Host</dt><dd id="host">—</dd></div>
+        <div><dt>IP</dt><dd id="ips">—</dd></div>
+        <div><dt>Uptime</dt><dd id="uptime">—</dd></div>
+        <div><dt>Panel</dt><dd id="panelState">—</dd></div>
+        <div><dt>Firmware</dt><dd id="fw">—</dd></div>
+        <div><dt>Weather</dt><dd id="wxSrc">—</dd></div>
+      </dl>
+      <p class="mono log" id="lastLog"></p>
+    </div>
+  </section>
+
   <!-- LOG: events + simulator -->
   <section id="tab-log" class="tab" role="tabpanel" hidden>
     <div class="card">
@@ -186,6 +203,7 @@
     </details>
   </section>
 </main>
+</div>
 
 <footer class="land">
   <button id="landBtn"><span class="fill"></span><span class="txt">SAFETY LAND NOW</span></button>
