@@ -147,14 +147,15 @@ function renderWizard() {
 
   const st = proc.steps[pf.step], status = v.steps[pf.step];
   const box = $('wzStep');
-  box.replaceChildren(
+  // Native replaceChildren() turns null into the text "null": drop absent parts.
+  box.replaceChildren(...[
     el('div', { class: 'label' }, st.kind === 'auto' ? 'Automated · review' : st.kind === 'review' ? 'Review · acknowledge' : 'Field input'),
     el('h3', {}, st.title),
     st.intro ? el('div', { class: 'callout', 'data-tone': st.intro.tone }, st.intro.text) : null,
     ...st.fields.map((f) => renderField(st, f, sealed)),
     status.errors.length && !sealed ? el('ul', { class: 'errs' }, status.errors.map((e) => el('li', {}, e))) : null,
     renderNav(sealed),
-  );
+  ].filter((x) => x != null));
 }
 
 function renderNav(sealed) {
