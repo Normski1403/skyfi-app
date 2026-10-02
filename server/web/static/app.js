@@ -217,6 +217,7 @@ function render() {
   $('pill').dataset.sev = landing ? 'danger' : SEV[s.sys];
   $('panelLink').toggleAttribute('data-on', s.panel.alive);
   renderTiles(); renderStation(); renderEvents(); markPicker();
+  if (window.pfOnState) window.pfOnState(s);
   $('trendNow').textContent = fmt(METRICS.find((x) => x.k === trendMetric), current(s, METRICS.find((x) => x.k === trendMetric))[0]);
 }
 

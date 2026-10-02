@@ -26,6 +26,8 @@
     <svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8" fill="none" stroke-width="2.5"/></svg>Trends</button>
   <button role="tab" data-tab="station">
     <svg viewBox="0 0 24 24"><circle cx="5" cy="5" r="3"/><circle cx="19" cy="5" r="3"/><circle cx="5" cy="19" r="3"/><circle cx="19" cy="19" r="3"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>Station</button>
+  <button role="tab" data-tab="preflight">
+    <svg viewBox="0 0 24 24"><path d="M9 4h6v3H9zM6 5h2v2h8V5h2v16H6zM9 12l2 2 4-4" fill="none" stroke-width="2"/></svg>Pre-flight</button>
   <button role="tab" data-tab="log">
     <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10" fill="none" stroke-width="2.5"/></svg>Log</button>
 </nav>
@@ -60,7 +62,10 @@
         <div class="state" id="droneState">—</div>
         <div class="sub" id="topAlert"></div>
       </div>
-      <span class="chip" id="autoChip">AUTO-LAND —</span>
+      <div class="chips">
+        <span class="chip" id="autoChip">AUTO-LAND —</span>
+        <button class="chip" id="clrChip" data-goto="preflight">PRE-FLIGHT —</button>
+      </div>
     </div>
 
     <div class="gauges">
@@ -106,6 +111,62 @@
     </div>
   </section>
 
+  <!-- PRE-FLIGHT: config-driven wizard; a sealed one clears launch -->
+  <section id="tab-preflight" class="tab" role="tabpanel" hidden>
+    <div class="card clearance" id="clrCard" data-state="none">
+      <div class="clr-main">
+        <div class="label">Launch clearance</div>
+        <div class="clr-state" id="clrState">—</div>
+        <div class="sub" id="clrDetail"></div>
+      </div>
+      <div class="clr-actions">
+        <button class="btn primary" id="pfStartBtn">Start pre-flight</button>
+        <button class="btn danger-ghost" id="pfOverrideBtn">Emergency override</button>
+      </div>
+    </div>
+
+    <div id="wizard" hidden>
+      <div class="card wz-head">
+        <div class="wz-title">
+          <div class="label" id="wzEyebrow">Pre-flight</div>
+          <strong id="wzSite">—</strong>
+        </div>
+        <span class="wz-saved" id="wzSaved"></span>
+        <button class="btn secondary small" id="wzClose">Close</button>
+        <div class="wz-progress"><div id="wzProgress"></div></div>
+      </div>
+      <div class="wz-body">
+        <ol class="wz-steps" id="wzSteps"></ol>
+        <div class="card wz-step" id="wzStep"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Recent pre-flights</h2></div>
+      <ol class="pf-history" id="pfHistory"></ol>
+    </div>
+
+    <dialog id="startDlg" class="dlg">
+      <h2>Start a pre-flight</h2>
+      <p class="sub">Choose the site. Its rules and procedure come from the site configuration.</p>
+      <div class="site-list" id="siteList"></div>
+      <div class="dlg-actions"><button class="btn secondary" value="cancel" formmethod="dialog" onclick="this.closest('dialog').close()">Cancel</button></div>
+    </dialog>
+
+    <dialog id="overrideDlg" class="dlg">
+      <h2>Emergency override</h2>
+      <p class="sub">Allows launch without a completed pre-flight. It is sealed, logged, shown on every display and flagged for review.</p>
+      <label class="fld"><span>Site</span><select id="ovSite"></select></label>
+      <label class="fld"><span>Pilot in command</span><select id="ovOp"></select></label>
+      <label class="fld"><span>Reason</span><textarea id="ovReason" rows="3" placeholder="Why is the pre-flight being bypassed?"></textarea></label>
+      <p class="err" id="ovErr"></p>
+      <div class="dlg-actions">
+        <button class="btn secondary" onclick="this.closest('dialog').close()">Cancel</button>
+        <button class="btn danger" id="ovGo">Override and allow launch</button>
+      </div>
+    </dialog>
+  </section>
+
   <!-- LOG: events + simulator -->
   <section id="tab-log" class="tab" role="tabpanel" hidden>
     <div class="card">
@@ -130,5 +191,6 @@
   <button id="landBtn"><span class="fill"></span><span class="txt">SAFETY LAND NOW</span></button>
 </footer>
 <script src="app.js"></script>
+<script src="preflight.js"></script>
 </body>
 </html>
