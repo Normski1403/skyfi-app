@@ -1,0 +1,177 @@
+{
+  "id": "standard",
+  "version": "1.0.0",
+  "title": "Standard tethered deployment",
+  "description": "Pre-flight for a tethered comms drone at a field site. Ported from the Claude Design prototype (prototype/src).",
+  "steps": [
+    {
+      "id": "location",
+      "short": "Location",
+      "title": "Confirm launch location",
+      "kind": "input",
+      "intro": { "tone": "info", "text": "Use the device GPS or enter the launch point. It must be inside the site's operating area." },
+      "fields": [
+        { "id": "position", "type": "location", "label": "Launch position", "required": true, "within_site": true }
+      ]
+    },
+    {
+      "id": "weather",
+      "short": "Weather",
+      "title": "Environmental conditions",
+      "kind": "auto",
+      "intro": { "tone": "info", "text": "Live readings from the on-site Enviro Weather, checked against this site's limits. On-site readings override any forecast." },
+      "fields": [
+        { "id": "conditions", "type": "live_weather", "label": "On-site conditions within site limits", "required": true },
+        { "id": "agreed", "type": "ack", "label": "I have reviewed the current conditions", "required": true }
+      ]
+    },
+    {
+      "id": "airspace",
+      "short": "Airspace",
+      "title": "Airspace clearance",
+      "kind": "input",
+      "fields": [
+        {
+          "id": "checks", "type": "checklist", "label": "Airspace checks", "required": true,
+          "items": [
+            { "id": "notam", "label": "NOTAMs checked for the flight window" },
+            { "id": "ctr", "label": "Outside controlled airspace, or permission held" },
+            { "id": "mil", "label": "No military or restricted area active" },
+            { "id": "emcomm", "label": "Emergency services informed of the deployment" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "regulatory",
+      "short": "Compliance",
+      "title": "Regulatory compliance",
+      "kind": "review",
+      "fields": [
+        { "id": "notes", "type": "info", "label": "Site regulatory notes", "text": "$site.regulatory" },
+        { "id": "acknowledged", "type": "ack", "label": "I have reviewed the site's regulatory requirements and accept responsibility for compliance", "required": true }
+      ]
+    },
+    {
+      "id": "photo",
+      "short": "Site photos",
+      "title": "Launch site photographs",
+      "kind": "input",
+      "intro": { "tone": "info", "text": "North-facing wide shot, ground surface, overhead obstructions. Sealed into the record." },
+      "fields": [
+        { "id": "photos", "type": "photo", "label": "Launch site photographs", "required": true, "min": 1, "max": 6 }
+      ]
+    },
+    {
+      "id": "hazards",
+      "short": "Hazards",
+      "title": "On-site hazard assessment",
+      "kind": "input",
+      "intro": { "tone": "warn", "text": "Walk the site. A blocking answer stops the launch; some answers reduce the altitude ceiling." },
+      "fields": [
+        {
+          "id": "people", "type": "choice", "label": "People nearby", "help": "Uninvolved persons within the tether radius?", "required": true,
+          "options": [
+            { "value": "none", "label": "None present" },
+            { "value": "marshalled", "label": "Beyond tether radius, marshalled" },
+            { "value": "within", "label": "Within tether radius", "blocks": true }
+          ]
+        },
+        {
+          "id": "power", "type": "choice", "label": "Overhead power lines", "required": true,
+          "options": [
+            { "value": "none", "label": "None visible" },
+            { "value": "far", "label": "Present, distance verified > 80 m" },
+            { "value": "near", "label": "Present, closer than 80 m", "blocks": true }
+          ]
+        },
+        {
+          "id": "structures", "type": "choice", "label": "Tall structures", "required": true,
+          "options": [
+            { "value": "none", "label": "None within 150 m" },
+            { "value": "present", "label": "Present, ceiling reduced to 80 m", "max_alt_m": 80 }
+          ]
+        },
+        {
+          "id": "water", "type": "choice", "label": "Open water", "required": true,
+          "options": [
+            { "value": "none", "label": "None" },
+            { "value": "present", "label": "Present, flotation rigged" }
+          ]
+        },
+        {
+          "id": "fuel", "type": "choice", "label": "Fuel or generators", "required": true,
+          "options": [
+            { "value": "none", "label": "None within 30 m" },
+            { "value": "far", "label": "Present, distance > 30 m verified" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "crew",
+      "short": "Crew",
+      "title": "Operating crew",
+      "kind": "input",
+      "fields": [
+        { "id": "crew", "type": "crew", "label": "Personnel present and pilot in command", "required": true, "min": "$site.rules.min_crew" }
+      ]
+    },
+    {
+      "id": "contact",
+      "short": "Emergency",
+      "title": "Emergency contact",
+      "kind": "input",
+      "intro": { "tone": "info", "text": "Who do we call if the flight is lost?" },
+      "fields": [
+        { "id": "name", "type": "text", "label": "Primary contact", "required": true, "default": "$site.contact.name" },
+        { "id": "phone", "type": "tel", "label": "Primary phone", "required": true, "pattern": "^\\+?[0-9 ()-]{6,}$", "default": "$site.contact.phone" },
+        {
+          "id": "relation", "type": "choice", "label": "Relationship to operation", "required": true,
+          "options": [
+            { "value": "dispatch", "label": "Dispatch / ops centre" },
+            { "value": "authority", "label": "Local authority" },
+            { "value": "landowner", "label": "Landowner" },
+            { "value": "other", "label": "Other" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "parameters",
+      "short": "Parameters",
+      "title": "Flight parameters",
+      "kind": "input",
+      "intro": { "tone": "info", "text": "Sky-Fi will not exceed these values. The tether length is a hard ceiling regardless." },
+      "fields": [
+        { "id": "altitude", "type": "number", "label": "Target altitude", "unit": "m AGL", "min": 10, "max": 150, "step": 5, "required": true, "default": 30 },
+        { "id": "tether", "type": "number", "label": "Tether length deployed", "unit": "m", "min": 20, "max": 150, "step": 10, "required": true, "default": 50 },
+        { "id": "window", "type": "number", "label": "Planned flight window", "unit": "min", "min": 15, "max": 720, "step": 15, "required": true, "default": 120 }
+      ],
+      "rules": [
+        { "check": "parameters.tether >= parameters.altitude", "message": "Tether must be at least as long as the target altitude" },
+        { "check": "parameters.altitude <= $limits.max_alt_m", "message": "Target altitude is above this site's ceiling ($limits.max_alt_m m)" }
+      ]
+    },
+    {
+      "id": "signature",
+      "short": "Sign-off",
+      "title": "Operator sign-off",
+      "kind": "input",
+      "intro": { "tone": "info", "text": "The pilot in command signs. The signature is sealed into the record." },
+      "fields": [
+        { "id": "signature", "type": "signature", "label": "Pilot in command signature", "required": true }
+      ]
+    },
+    {
+      "id": "risk",
+      "short": "Risk",
+      "title": "Risk acceptance",
+      "kind": "review",
+      "intro": { "tone": "warn", "text": "Final review before the drone can be launched. Completing seals this pre-flight; it stays valid for this site for $site.rules.validity_h hours." },
+      "fields": [
+        { "id": "accepted", "type": "ack", "label": "I accept the risk profile and authorise launch", "required": true }
+      ]
+    }
+  ]
+}

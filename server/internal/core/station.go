@@ -73,6 +73,19 @@ type LandInfo struct {
 	Result string `json:"result"` // landing | already landing | already grounded
 }
 
+// GateResult is what the launch gate (the pre-flight service) allows.
+type GateResult struct {
+	Mode     string // cleared | override
+	Site     string
+	By       string
+	Alt      float64 // altitude to fly, already capped
+	WindLand float64 // site limits become the auto-land thresholds
+	GustLand float64
+}
+
+// LaunchGate approves a launch (or says why not). nil = no gate.
+type LaunchGate func(requestAlt float64) (GateResult, error)
+
 // Snapshot is the full state as served to the web app and used for Presto status.
 type Snapshot struct {
 	Time    time.Time `json:"time"`
@@ -88,6 +101,10 @@ type Snapshot struct {
 	Policy  Policy    `json:"policy"`
 	Events  []Event   `json:"events"`
 	Land    *LandInfo `json:"last_land,omitempty"`
+	// Pre-flight clearance (from the gate's provider): detail for the web
+	// app, short text for the panel.
+	Clearance     any    `json:"clearance,omitempty"`
+	ClearanceText string `json:"clearance_text"`
 }
 
 const (
@@ -116,6 +133,9 @@ type Station struct {
 	hist history
 
 	lastLand *LandInfo
+
+	gate      LaunchGate
+	clearance func() (detail any, text string) // must not call back into Station
 
 	subs map[chan struct{}]struct{}
 }
@@ -214,7 +234,30 @@ func (s *Station) landLocked(source, reason, dedupeKey string) (cmdID string, ac
 	return cmdID, true, msg
 }
 
+// SetGate installs the launch gate and the clearance provider.
+func (s *Station) SetGate(g LaunchGate, clearance func() (any, string)) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.gate, s.clearance = g, clearance
+}
+
 func (s *Station) Launch(source string, alt float64) error {
+	s.mu.Lock()
+	gate := s.gate
+	s.mu.Unlock()
+	var gr *GateResult
+	if gate != nil { // outside the lock: the gate may be slow (database)
+		r, err := gate(alt)
+		if err != nil {
+			s.mu.Lock()
+			s.logLocked("command", source, "LAUNCH refused: "+err.Error())
+			s.notifyLocked()
+			s.mu.Unlock()
+			return fmt.Errorf("launch blocked: %w", err)
+		}
+		gr, alt = &r, r.Alt
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.drone.State != Grounded {
@@ -228,8 +271,22 @@ func (s *Station) Launch(source string, alt float64) error {
 			return fmt.Errorf("launch blocked: %s", a.Msg)
 		}
 	}
+	note := ""
+	if gr != nil {
+		if gr.WindLand > 0 {
+			s.policy.WindLand, s.policy.WindWarn = gr.WindLand, gr.WindLand*0.7
+		}
+		if gr.GustLand > 0 {
+			s.policy.GustLand, s.policy.GustWarn = gr.GustLand, gr.GustLand*0.75
+		}
+		if gr.Mode == "override" {
+			note = fmt.Sprintf(" UNDER EMERGENCY OVERRIDE by %s at %s", gr.By, gr.Site)
+		} else {
+			note = fmt.Sprintf(" (pre-flight: %s, PiC %s)", gr.Site, gr.By)
+		}
+	}
 	s.drone.State = Ascending
-	s.logLocked("command", source, fmt.Sprintf("LAUNCH to %.0f m", s.drone.TargetAlt))
+	s.logLocked("command", source, fmt.Sprintf("LAUNCH to %.0f m%s", s.drone.TargetAlt, note))
 	s.notifyLocked()
 	return nil
 }
@@ -239,6 +296,14 @@ func (s *Station) SetAutoLand(source string, on bool) {
 	defer s.mu.Unlock()
 	s.policy.AutoLand = on
 	s.logLocked("command", source, fmt.Sprintf("Auto-land %s", map[bool]string{true: "armed", false: "DISARMED"}[on]))
+	s.notifyLocked()
+}
+
+// Note adds an event to the log (e.g. an emergency override).
+func (s *Station) Note(kind, source, msg string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.logLocked(kind, source, msg)
 	s.notifyLocked()
 }
 
@@ -363,6 +428,15 @@ func (s *Station) Tick(dt time.Duration) {
 
 func (s *Station) Snapshot() Snapshot {
 	s.mu.Lock()
+	clr := s.clearance
+	s.mu.Unlock()
+	var cDetail any
+	cText := ""
+	if clr != nil { // outside the lock
+		cDetail, cText = clr()
+	}
+
+	s.mu.Lock()
 	defer s.mu.Unlock()
 	now := time.Now()
 	wx := s.effectiveWxLocked()
@@ -377,7 +451,7 @@ func (s *Station) Snapshot() Snapshot {
 		Time: now, Host: s.host, IPs: localIPs(), Uptime: int64(now.Sub(s.started).Seconds()),
 		Sys: worst(s.alerts), Alerts: append([]Alert{}, s.alerts...),
 		Drone: s.drone, Weather: wx, WxAge: age, Panel: s.panel, Policy: s.policy, Events: ev,
-		Land: s.lastLand,
+		Land: s.lastLand, Clearance: cDetail, ClearanceText: cText,
 	}
 }
 

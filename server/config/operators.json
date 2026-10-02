@@ -1,0 +1,8 @@
+{
+  "operators": [
+    { "id": "op-pic-1", "name": "Pilot One", "roles": ["pic", "observer"], "cert": "PiC-0001", "cert_expires": "2027-12-31" },
+    { "id": "op-pic-2", "name": "Pilot Two", "roles": ["pic", "observer"], "cert": "PiC-0002", "cert_expires": "2026-06-30" },
+    { "id": "op-obs-1", "name": "Observer One", "roles": ["observer"] },
+    { "id": "op-obs-2", "name": "Observer Two", "roles": ["observer"] }
+  ]
+}

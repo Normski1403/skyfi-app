@@ -4,7 +4,7 @@ After=network-online.target
 Wants=network-online.target
 
 [Service]
-ExecStart=/opt/skyfi/skyfid -listen :80,:8000
+ExecStart=/opt/skyfi/skyfid -listen :80,:8000 -state-dir /var/lib/skyfi
 Restart=always
 RestartSec=2
 # Unprivileged, but allowed port 80 and the Presto's USB serial (root:plugdev).
@@ -16,6 +16,9 @@ NoNewPrivileges=yes
 ProtectSystem=strict
 ProtectHome=yes
 PrivateTmp=yes
+# Database, device signing key, pre-flight photos/signatures, config bundle
+StateDirectory=skyfi
+StateDirectoryMode=0700
 DeviceAllow=char-ttyACM rw
 
 [Install]

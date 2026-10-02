@@ -1,0 +1,43 @@
+{
+  "sites": [
+    {
+      "id": "bench",
+      "name": "Test bench (4our)",
+      "description": "Indoor test setup: simulated drone, Enviro Weather on the bench. No geofence.",
+      "procedure": "standard",
+      "rules": {
+        "max_alt_m": 50,
+        "wind_land_ms": 10,
+        "gust_land_ms": 15,
+        "min_crew": 1,
+        "validity_h": 12,
+        "allow_override": true,
+        "override_validity_h": 1,
+        "require_cloud_sync": false
+      },
+      "contact": { "name": "Ops desk", "phone": "+44 0000 000000" },
+      "regulatory": "Bench testing only: the drone is simulated, nothing flies."
+    },
+    {
+      "id": "field-demo",
+      "name": "Field demo site",
+      "description": "Example outdoor site with a 300 m operating area. Replace the coordinates with a real site.",
+      "procedure": "standard",
+      "lat": 51.5014,
+      "lon": -0.1419,
+      "radius_m": 300,
+      "rules": {
+        "max_alt_m": 120,
+        "wind_land_ms": 9,
+        "gust_land_ms": 13,
+        "min_crew": 2,
+        "validity_h": 8,
+        "allow_override": true,
+        "override_validity_h": 1,
+        "require_cloud_sync": false
+      },
+      "contact": { "name": "Regional ops centre", "phone": "+44 0000 000001" },
+      "regulatory": "UK CAA: operate under the site's operational authorisation. Maintain VLOS of the tether point, keep 50 m from uninvolved people, and log the flight."
+    }
+  ]
+}

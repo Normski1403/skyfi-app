@@ -1,6 +1,7 @@
 package core
 
 import (
+	"errors"
 	"testing"
 	"time"
 )
@@ -101,5 +102,25 @@ func TestLastLandRecorded(t *testing.T) {
 	s.Land("auto", "gust", "")
 	if ll := s.Snapshot().Land; ll.Seq != 2 || ll.Result != "already landing" {
 		t.Fatalf("second land %+v", ll)
+	}
+}
+
+func TestLaunchGate(t *testing.T) {
+	s := NewStation()
+	s.UpdateWeather(Weather{Wind: f(2)}, "test")
+	s.Tick(time.Second)
+	s.SetGate(func(float64) (GateResult, error) { return GateResult{}, errors.New("no pre-flight") }, nil)
+	if err := s.Launch("web", 0); err == nil {
+		t.Fatal("launched without clearance")
+	}
+	s.SetGate(func(float64) (GateResult, error) {
+		return GateResult{Mode: "cleared", Site: "bench", By: "P1", Alt: 40, WindLand: 8, GustLand: 12}, nil
+	}, func() (any, string) { return "detail", "CLEARED" })
+	if err := s.Launch("web", 0); err != nil {
+		t.Fatal(err)
+	}
+	snap := s.Snapshot()
+	if snap.Drone.TargetAlt != 40 || snap.Policy.WindLand != 8 || snap.Policy.GustLand != 12 || snap.ClearanceText != "CLEARED" {
+		t.Fatalf("gate not applied: alt=%v policy=%+v clr=%q", snap.Drone.TargetAlt, snap.Policy, snap.ClearanceText)
 	}
 }

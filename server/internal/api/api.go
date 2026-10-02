@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/zimchaa/skyfi-app/server/internal/core"
+	"github.com/zimchaa/skyfi-app/server/internal/preflight"
 	"github.com/zimchaa/skyfi-app/server/internal/presto"
 )
 
@@ -22,6 +23,7 @@ type Server struct {
 	Station *core.Station
 	Static  fs.FS
 	WiFi    presto.WiFiInfo
+	PF      *preflight.Service // nil = no pre-flight gate
 }
 
 func (s *Server) Handler() http.Handler {
@@ -37,6 +39,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("POST /api/v1/launch", s.launch)
 	mux.HandleFunc("POST /api/v1/autoland", s.autoland)
 	mux.HandleFunc("POST /api/v1/sim", s.sim)
+	s.preflightRoutes(mux)
 
 	// Presto WiFi fallback (polled by skyfiscreen/src/net.cpp)
 	mux.HandleFunc("GET /api/v1/status", s.compatStatus)
