@@ -29,7 +29,7 @@ Any change here needs a matching change in the firmware, in the same push.
 
 | `t` | When | Fields |
 |---|---|---|
-| `status` | 1 Hz, and right after any state change | `sys` (`ok`\|`degraded`\|`fault`), `drone` (`grounded`\|`ascending`\|`airborne`\|`descending`), `batt` %, `alt` m, `tether` kg, `power` (`tether`\|`battery`), `auto` (`armed`\|`off`), `ip`, `host`, `msg` (≤ 40 chars, the top alert or `""`) |
+| `status` | 1 Hz, and right after any state change | `sys` (`ok`\|`degraded`\|`fault`), `drone` (`grounded`\|`ascending`\|`airborne`\|`descending`), `batt` %, `alt` m, `tgt` target altitude m, `tether` kg, `power` (`tether`\|`battery`), `auto` (`armed`\|`off`), `ip`, `host`, `msg` (≤ 40 chars, the top alert or `""`) |
 | `ack` | reply to `land` | `id` (echoed), `ok` (bool), `cmd` (server command id), `err` (if not ok) |
 | `wifi` | after `hello` | `ssid`, `pw`, `qr` (WiFi-join QR payload) |
 
@@ -53,7 +53,7 @@ Any change here needs a matching change in the firmware, in the same push.
 → {"t":"hello","fw":"skyfiscreen 0.4.0","proto":1}
 ← {"t":"wifi","ssid":"SkyFi-Ground","pw":"skyfi-field-1234","qr":"WIFI:T:WPA;S:SkyFi-Ground;P:skyfi-field-1234;;"}
 → {"t":"wx","wind":4.1,"gust":6.3,"dir":225,"rain":0.0,"lux":812}
-← {"t":"status","sys":"ok","drone":"airborne","batt":96,"alt":50.0,"tether":12.1,"power":"tether","auto":"armed","ip":"192.168.1.145","host":"4our","msg":""}
+← {"t":"status","sys":"ok","drone":"airborne","batt":96,"alt":50.0,"tgt":50.0,"tether":12.1,"power":"tether","auto":"armed","ip":"192.168.1.145","host":"4our","msg":""}
 → {"t":"land","id":"p-17"}
 ← {"t":"ack","id":"p-17","ok":true,"cmd":"c-0042"}
 ```

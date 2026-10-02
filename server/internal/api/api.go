@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"io/fs"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/zimchaa/skyfi-app/server/internal/core"
@@ -31,6 +32,7 @@ func (s *Server) Handler() http.Handler {
 		writeJSON(w, http.StatusOK, s.Station.Snapshot())
 	})
 	mux.HandleFunc("GET /api/v1/stream", s.stream)
+	mux.HandleFunc("GET /api/v1/history", s.history)
 	mux.HandleFunc("POST /api/v1/land", s.land)
 	mux.HandleFunc("POST /api/v1/launch", s.launch)
 	mux.HandleFunc("POST /api/v1/autoland", s.autoland)
@@ -82,6 +84,16 @@ func (s *Server) stream(w http.ResponseWriter, r *http.Request) {
 			time.Sleep(250 * time.Millisecond)
 		}
 	}
+}
+
+// history returns samples newer than ?since=<seq> (default: the whole hour).
+func (s *Server) history(w http.ResponseWriter, r *http.Request) {
+	since, _ := strconv.ParseInt(r.URL.Query().Get("since"), 10, 64)
+	writeJSON(w, http.StatusOK, map[string]any{
+		"interval_s": core.HistoryInterval.Seconds(),
+		"metrics":    core.HistoryMetrics,
+		"samples":    s.Station.History(since),
+	})
 }
 
 func (s *Server) land(w http.ResponseWriter, r *http.Request) {

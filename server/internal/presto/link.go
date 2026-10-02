@@ -228,7 +228,7 @@ func statusMsg(s core.Snapshot) map[string]any {
 	r1 := func(v float64) float64 { return float64(int(v*10+0.5)) / 10 }
 	return map[string]any{
 		"t": "status", "sys": s.Sys, "drone": s.Drone.State,
-		"batt": int(s.Drone.Batt + 0.5), "alt": r1(s.Drone.Alt), "tether": r1(s.Drone.Tether),
+		"batt": int(s.Drone.Batt + 0.5), "alt": r1(s.Drone.Alt), "tgt": r1(s.Drone.TargetAlt), "tether": r1(s.Drone.Tether),
 		"power": s.Drone.Power, "auto": auto, "ip": ip, "host": s.Host, "msg": msg,
 	}
 }

@@ -74,3 +74,19 @@ func TestLaunchBlockedInFault(t *testing.T) {
 		t.Fatal("launch allowed during gust fault")
 	}
 }
+
+func TestHistorySampling(t *testing.T) {
+	s := NewStation()
+	s.UpdateWeather(Weather{Wind: f(3)}, "test")
+	s.Tick(time.Second) // first sample is immediate
+	s.Tick(time.Second) // within the interval: no new sample
+	h := s.History(0)
+	if len(h) != 1 || *h[0].V["wind"] != 3 || h[0].V["batt"] == nil {
+		t.Fatalf("history %+v", h)
+	}
+	s.hist.next = time.Now().Add(-time.Second)
+	s.Tick(time.Second)
+	if got := s.History(h[0].Seq); len(got) != 1 {
+		t.Fatalf("since filter: %d samples", len(got))
+	}
+}

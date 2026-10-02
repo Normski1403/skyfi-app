@@ -103,6 +103,8 @@ type Station struct {
 	cmdSeq  int
 	landIDs map[string]string // panel land id -> command id (idempotent retries)
 
+	hist history
+
 	subs map[chan struct{}]struct{}
 }
 
@@ -322,6 +324,7 @@ func (s *Station) Tick(dt time.Duration) {
 
 	wx := s.effectiveWxLocked()
 	s.drone.step(dt.Seconds(), wx.wind())
+	s.sampleLocked(now, wx, !wx.Updated.IsZero() && now.Sub(wx.Updated) < s.policy.WxStale)
 
 	alerts, landReason := s.policy.evaluate(now, s.drone, wx, s.panel.Alive, &s.windHighSince)
 	slices.SortStableFunc(alerts, func(a, b Alert) int {
