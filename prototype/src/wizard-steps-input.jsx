@@ -301,7 +301,7 @@ const ParametersStep = ({ data, setData, prefilled }) => {
   const tether = data.tether ?? (prefilled ? 100 : 100);
   const windowMin = data.windowMin ?? (prefilled ? 45 : 30);
 
-  const update = (k, v) => setData({ ...data, [k]: v });
+  const update = (k, v) => setData({ ...data, altitude, tether, windowMin, [k]: v });
 
   return (
     <div className="wz-step-body">
