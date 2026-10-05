@@ -10,6 +10,7 @@ const PRINT_STEPS = [
   { id: 'weather',    short: 'Weather',    title: 'Environmental conditions',  type: 'review-auto', Comp: () => WeatherStep },
   { id: 'airspace',   short: 'Airspace',   title: 'Airspace clearance',        type: 'review-mix', Comp: () => AirspaceStep },
   { id: 'regulatory', short: 'Compliance', title: 'Regulatory compliance',     type: 'review-prefilled', Comp: () => RegulatoryStep },
+  { id: 'approvals',  short: 'Approvals',  title: 'Deployment approvals',      type: 'review-mix', Comp: () => ApprovalsStep },
   { id: 'photo',      short: 'Site photos',title: 'Launch site photographs',   type: 'input', Comp: () => PhotoStep },
   { id: 'hazards',    short: 'Hazards',    title: 'On-site hazard assessment', type: 'input', Comp: () => HazardsStep },
   { id: 'crew',       short: 'Crew',       title: 'Operating crew',            type: 'input', Comp: () => CrewStep },
@@ -25,6 +26,7 @@ const PRINT_DATA = {
   weather:    { fetched: true, timestamp: '2026-05-16T08:42Z', agreed: true, __prefilled: true },
   airspace:   { checks: { notam: true, ctr: true, mil: true, emcomm: true }, __prefilled: false },
   regulatory: { acknowledged: true, __prefilled: true },
+  approvals:  { country: 'TR', tr: { confirmed: true }, __prefilled: true },
   photo:      { photo: { synthetic: true }, meta: { ts: '2026-05-16T08:39Z', heading: 218, count: 3 }, __prefilled: true },
   hazards:    { hazards: {
                   people: 'Beyond 50 m, marshalled',
@@ -180,7 +182,7 @@ const PrintHandoffPage = ({ index, total }) => {
                 <DataRow label="Target altitude" value={95} unit="m AGL" />
                 <DataRow label="Tether length" value={100} unit="m" />
                 <DataRow label="Flight window" value={45} unit="min" />
-                <DataRow label="Steps signed" value={11} />
+                <DataRow label="Steps signed" value={total} />
                 <DataRow label="Hash" value="sha256:7e3b4f8a1c92d0e6f102…" />
                 <DataRow label="Pilot in command" value="Aydın Demir" />
               </div>

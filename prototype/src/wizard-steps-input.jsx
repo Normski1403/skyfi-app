@@ -4,7 +4,7 @@
    (slider), finger signature, risk acceptance.
 ──────────────────────────────────────────────────────────── */
 
-/* ── 5. Photo capture ──────────────────────────────────────── */
+/* ── 6. Photo capture ──────────────────────────────────────── */
 const PhotoStep = ({ data, setData, prefilled }) => {
   const fileRef = React.useRef(null);
   const [photo, setPhoto] = React.useState(data.photo || (prefilled ? { synthetic: true } : null));
@@ -99,7 +99,7 @@ const SyntheticSitePhoto = ({ angle }) => {
   );
 };
 
-/* ── 6. Hazards ────────────────────────────────────────────── */
+/* ── 7. Hazards ────────────────────────────────────────────── */
 const HazardsStep = ({ data, setData, prefilled }) => {
   const hazards = data.hazards || {};
   const update = (key, val) => setData({ ...data, hazards: { ...hazards, [key]: val } });
@@ -165,7 +165,7 @@ const HazardsStep = ({ data, setData, prefilled }) => {
   );
 };
 
-/* ── 7. Crew ───────────────────────────────────────────────── */
+/* ── 8. Crew ───────────────────────────────────────────────── */
 const CrewStep = ({ data, setData, prefilled }) => {
   const crew = data.crew || (prefilled ? ['lead', 'observer', 'rf', 'liaison'] : []);
   const lead = data.lead || (prefilled ? 'lead' : null);
@@ -234,7 +234,7 @@ const CrewStep = ({ data, setData, prefilled }) => {
   );
 };
 
-/* ── 8. Emergency contact ──────────────────────────────────── */
+/* ── 9. Emergency contact ──────────────────────────────────── */
 const ContactStep = ({ data, setData, prefilled }) => {
   const c = data.contact || (prefilled ? {
     name: 'Operations Centre — Ankara',
@@ -295,13 +295,13 @@ const ContactStep = ({ data, setData, prefilled }) => {
   );
 };
 
-/* ── 9. Flight parameters (slider) ─────────────────────────── */
+/* ── 10. Flight parameters (slider) ─────────────────────────── */
 const ParametersStep = ({ data, setData, prefilled }) => {
   const altitude = data.altitude ?? (prefilled ? 95 : 80);
   const tether = data.tether ?? (prefilled ? 100 : 100);
   const windowMin = data.windowMin ?? (prefilled ? 45 : 30);
 
-  const update = (k, v) => setData({ ...data, [k]: v, altitude, tether, windowMin });
+  const update = (k, v) => setData({ ...data, [k]: v });
 
   return (
     <div className="wz-step-body">
@@ -328,13 +328,13 @@ const ParametersStep = ({ data, setData, prefilled }) => {
 
       <Field id="FP-WINDOW" label="Planned flight window" helper="Sky-Fi will warn at 75% and force return at 100%." required>
         <NumberDisplay value={windowMin} unit="min" />
-        <RangeSlider id="FP-WINDOW" min={15} max={180} step={15} value={windowMin} onChange={v => update('windowMin', v)} marks={[30, 60, 90, 120]} />
+        <RangeSlider id="FP-WINDOW" min={30} max={180} step={15} value={windowMin} onChange={v => update('windowMin', v)} marks={[60, 90, 120, 150]} />
       </Field>
     </div>
   );
 };
 
-/* ── 10. Signature ─────────────────────────────────────────── */
+/* ── 11. Signature ─────────────────────────────────────────── */
 const SignatureStep = ({ data, setData, prefilled }) => {
   const canvasRef = React.useRef(null);
   const [drawing, setDrawing] = React.useState(false);
@@ -447,7 +447,7 @@ const SignatureStep = ({ data, setData, prefilled }) => {
   );
 };
 
-/* ── 11. Risk acceptance ───────────────────────────────────── */
+/* ── 12. Risk acceptance ───────────────────────────────────── */
 const RiskStep = ({ data, setData, prefilled, summary }) => {
   const accepted = data.accepted || false;
   const briefingShown = data.briefingShown || false;

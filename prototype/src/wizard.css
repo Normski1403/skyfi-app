@@ -298,6 +298,8 @@ body {
 }
 .wz-card .wz-data-grid { padding: 4px 16px 16px; }
 .wz-card--tight .wz-data-grid { padding: 0 16px 14px; }
+.wz-card > .wz-field { padding: 4px 16px 14px; }
+.wz-card--tight > .wz-field { padding: 0 16px 14px; }
 .wz-data-grid--cols2 { grid-template-columns: 1fr 1fr; gap: 0 18px; }
 .wz-step-body > .wz-data-grid { /* outside card */
   background: var(--wz-card-bg);
@@ -494,6 +496,40 @@ body {
 .wz-input::placeholder { color: var(--wz-text-muted); }
 .wz-input-prefix, .wz-input-suffix {
   color: var(--wz-text-muted); display: inline-flex; align-items: center;
+}
+
+/* ── Select (dropdown) ───────────────────────────────────── */
+.wz-select-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--wz-input-bg);
+  border: 1px solid var(--wz-input-stroke);
+  border-radius: 8px;
+  padding: 0 12px;
+  transition: border-color 120ms, box-shadow 120ms;
+}
+.wz-select-wrap:focus-within {
+  border-color: var(--wz-input-focus);
+  box-shadow: 0 0 0 3px rgba(230,0,0,0.12);
+}
+.wz-select {
+  appearance: none; -webkit-appearance: none; -moz-appearance: none;
+  border: 0; outline: 0; background: transparent;
+  padding: 12px 24px 12px 0;
+  font-size: 15px; color: var(--wz-text-strong);
+  font-family: inherit;
+  flex: 1;
+  min-width: 0;
+}
+.wz-select-wrap::after {
+  content: '';
+  position: absolute; right: 12px; top: 50%;
+  width: 8px; height: 8px;
+  border-right: 2px solid var(--wz-text-muted);
+  border-bottom: 2px solid var(--wz-text-muted);
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
 }
 
 /* ── Row layout helpers ──────────────────────────────────── */
@@ -918,11 +954,15 @@ body {
   cursor: grab;
 }
 .wz-slider-scale {
-  display: flex; justify-content: space-between;
+  position: relative;
+  height: 14px;
   font-family: var(--font-mono); font-size: 10px;
   color: var(--wz-text-muted);
 }
-.wz-slider-mark { color: var(--wz-text-soft); }
+.wz-slider-tick { position: absolute; top: 0; white-space: nowrap; }
+.wz-slider-tick--min { left: 0; }
+.wz-slider-tick--max { right: 0; }
+.wz-slider-mark { color: var(--wz-text-soft); transform: translateX(-50%); }
 .wz-coverage-est { margin-top: 6px; padding-top: 8px; border-top: 1px dashed var(--wz-divider); }
 .wz-coverage-est .wz-data-row { padding: 6px 0; }
 .wz-coverage-est .wz-data-row:last-child { border-bottom: 0; }

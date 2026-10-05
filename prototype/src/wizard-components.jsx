@@ -120,6 +120,16 @@ const TextInput = React.forwardRef(({ id, value, onChange, placeholder, type='te
   </div>
 ));
 
+// ── Select (dropdown) — used when the option list is long or open-ended
+const Select = ({ id, value, onChange, options, placeholder }) => (
+  <div className="wz-select-wrap">
+    <select id={id} value={value || ''} onChange={e => onChange(e.target.value)} className="wz-select">
+      {placeholder && <option value="" disabled>{placeholder}</option>}
+      {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+    </select>
+  </div>
+);
+
 // ── Stepped value indicator (used by sliders)
 const NumberDisplay = ({ value, unit, size='lg' }) => (
   <div className={"wz-numdisplay wz-numdisplay--" + size}>
@@ -129,27 +139,32 @@ const NumberDisplay = ({ value, unit, size='lg' }) => (
 );
 
 // ── Slider with tick + range labels
-const RangeSlider = ({ id, min, max, step, value, onChange, marks }) => (
-  <div className="wz-slider">
-    <input
-      id={id}
-      type="range"
-      min={min}
-      max={max}
-      step={step}
-      value={value}
-      onChange={e => onChange(Number(e.target.value))}
-      className="wz-slider-input"
-      style={{ '--pct': ((value - min) / (max - min)) * 100 + '%' }}
-    />
-    <div className="wz-slider-scale">
-      <span>{min}</span>
-      {marks && marks.map((m, i) => <span key={i} className="wz-slider-mark">{m}</span>)}
-      <span>{max}</span>
+const RangeSlider = ({ id, min, max, step, value, onChange, marks }) => {
+  const pct = (v) => ((v - min) / (max - min)) * 100;
+  return (
+    <div className="wz-slider">
+      <input
+        id={id}
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={e => onChange(Number(e.target.value))}
+        className="wz-slider-input"
+        style={{ '--pct': pct(value) + '%' }}
+      />
+      <div className="wz-slider-scale">
+        <span className="wz-slider-tick wz-slider-tick--min">{min}</span>
+        {marks && marks.map((m, i) => (
+          <span key={i} className="wz-slider-tick wz-slider-mark" style={{ left: pct(m) + '%' }}>{m}</span>
+        ))}
+        <span className="wz-slider-tick wz-slider-tick--max">{max}</span>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 Object.assign(window, {
-  Field, DataRow, StatusPill, Card, Callout, ChoiceTile, TextInput, NumberDisplay, RangeSlider,
+  Field, DataRow, StatusPill, Card, Callout, ChoiceTile, TextInput, Select, NumberDisplay, RangeSlider,
 });

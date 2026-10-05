@@ -11,6 +11,7 @@ const ALL_STEPS = [
   { id: 'weather',    short: 'Weather',       title: 'Environmental conditions',     type: 'review-auto', Comp: () => WeatherStep,  canSkipPrefill: false },
   { id: 'airspace',   short: 'Airspace',      title: 'Airspace clearance',          type: 'review-mix',  Comp: () => AirspaceStep, canSkipPrefill: false },
   { id: 'regulatory', short: 'Compliance',    title: 'Regulatory compliance',       type: 'review-prefilled', Comp: () => RegulatoryStep, canSkipPrefill: false },
+  { id: 'approvals',  short: 'Approvals',     title: 'Deployment approvals',        type: 'review-mix',  Comp: () => ApprovalsStep, canSkipPrefill: false },
   { id: 'photo',      short: 'Site photos',   title: 'Launch site photographs',     type: 'input',    Comp: () => PhotoStep,      canSkipPrefill: true },
   { id: 'hazards',    short: 'Hazards',       title: 'On-site hazard assessment',   type: 'input',    Comp: () => HazardsStep,    canSkipPrefill: true },
   { id: 'crew',       short: 'Crew',          title: 'Operating crew',              type: 'input',    Comp: () => CrewStep,       canSkipPrefill: true },
@@ -25,6 +26,12 @@ const STEP_VALIDATORS = {
   weather:    (d) => !!d.agreed,
   airspace:   (d) => d.checks && d.checks.notam && d.checks.ctr && d.checks.mil && d.checks.emcomm,
   regulatory: (d) => !!d.acknowledged,
+  approvals:  (d) => {
+    if (d.country === 'GB') return !!(d.gb && d.gb.operatorId && d.gb.soraConfirmed);
+    if (d.country === 'JM') return !!(d.jm && d.jm.confirmed);
+    if (d.country === 'TR') return !!(d.tr && d.tr.confirmed);
+    return false;
+  },
   photo:      (d) => !!d.photo,
   hazards:    (d) => ['people','power','structures','water','fuel'].every(k => d.hazards && d.hazards[k]),
   crew:       (d) => (d.crew || []).length >= 2 && !!d.lead,
@@ -37,14 +44,14 @@ const STEP_VALIDATORS = {
 const App = () => {
   const tweakDefaults = /*EDITMODE-BEGIN*/{
     "theme": "light",
-    "stepCount": 11,
+    "stepCount": 12,
     "prefilledMode": "mixed"
   }/*EDITMODE-END*/;
   const [tweaks, setTweak] = useTweaks(tweakDefaults);
 
   // Step set adjusts based on the count tweak
   const activeSteps = React.useMemo(() => {
-    const n = Math.min(Math.max(tweaks.stepCount || 11, 4), ALL_STEPS.length);
+    const n = Math.min(Math.max(tweaks.stepCount || 12, 4), ALL_STEPS.length);
     // Keep first 3 (location, weather, airspace), last 3 (parameters, signature, risk)
     // when reducing — drop from the middle
     if (n === ALL_STEPS.length) return ALL_STEPS;
@@ -581,7 +588,7 @@ const WizardTweaksPanel = ({ tweaks, setTweak }) => (
         label="Steps"
         value={tweaks.stepCount}
         onChange={v => setTweak('stepCount', v)}
-        min={6} max={11} step={1}
+        min={6} max={12} step={1}
         unit=" steps"
       />
       <TweakSelect

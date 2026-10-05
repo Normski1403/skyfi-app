@@ -526,6 +526,8 @@ body {
 }
 .wz-card .wz-data-grid { padding: 4px 16px 16px; }
 .wz-card--tight .wz-data-grid { padding: 0 16px 14px; }
+.wz-card > .wz-field { padding: 4px 16px 14px; }
+.wz-card--tight > .wz-field { padding: 0 16px 14px; }
 .wz-data-grid--cols2 { grid-template-columns: 1fr 1fr; gap: 0 18px; }
 .wz-step-body > .wz-data-grid { /* outside card */
   background: var(--wz-card-bg);
@@ -722,6 +724,40 @@ body {
 .wz-input::placeholder { color: var(--wz-text-muted); }
 .wz-input-prefix, .wz-input-suffix {
   color: var(--wz-text-muted); display: inline-flex; align-items: center;
+}
+
+/* ── Select (dropdown) ───────────────────────────────────── */
+.wz-select-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--wz-input-bg);
+  border: 1px solid var(--wz-input-stroke);
+  border-radius: 8px;
+  padding: 0 12px;
+  transition: border-color 120ms, box-shadow 120ms;
+}
+.wz-select-wrap:focus-within {
+  border-color: var(--wz-input-focus);
+  box-shadow: 0 0 0 3px rgba(230,0,0,0.12);
+}
+.wz-select {
+  appearance: none; -webkit-appearance: none; -moz-appearance: none;
+  border: 0; outline: 0; background: transparent;
+  padding: 12px 24px 12px 0;
+  font-size: 15px; color: var(--wz-text-strong);
+  font-family: inherit;
+  flex: 1;
+  min-width: 0;
+}
+.wz-select-wrap::after {
+  content: '';
+  position: absolute; right: 12px; top: 50%;
+  width: 8px; height: 8px;
+  border-right: 2px solid var(--wz-text-muted);
+  border-bottom: 2px solid var(--wz-text-muted);
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
 }
 
 /* ── Row layout helpers ──────────────────────────────────── */
@@ -1146,11 +1182,15 @@ body {
   cursor: grab;
 }
 .wz-slider-scale {
-  display: flex; justify-content: space-between;
+  position: relative;
+  height: 14px;
   font-family: var(--font-mono); font-size: 10px;
   color: var(--wz-text-muted);
 }
-.wz-slider-mark { color: var(--wz-text-soft); }
+.wz-slider-tick { position: absolute; top: 0; white-space: nowrap; }
+.wz-slider-tick--min { left: 0; }
+.wz-slider-tick--max { right: 0; }
+.wz-slider-mark { color: var(--wz-text-soft); transform: translateX(-50%); }
 .wz-coverage-est { margin-top: 6px; padding-top: 8px; border-top: 1px dashed var(--wz-divider); }
 .wz-coverage-est .wz-data-row { padding: 6px 0; }
 .wz-coverage-est .wz-data-row:last-child { border-bottom: 0; }
@@ -2206,6 +2246,16 @@ const TextInput = React.forwardRef(({ id, value, onChange, placeholder, type='te
   </div>
 ));
 
+// ── Select (dropdown) — used when the option list is long or open-ended
+const Select = ({ id, value, onChange, options, placeholder }) => (
+  <div className="wz-select-wrap">
+    <select id={id} value={value || ''} onChange={e => onChange(e.target.value)} className="wz-select">
+      {placeholder && <option value="" disabled>{placeholder}</option>}
+      {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+    </select>
+  </div>
+);
+
 // ── Stepped value indicator (used by sliders)
 const NumberDisplay = ({ value, unit, size='lg' }) => (
   <div className={"wz-numdisplay wz-numdisplay--" + size}>
@@ -2215,29 +2265,34 @@ const NumberDisplay = ({ value, unit, size='lg' }) => (
 );
 
 // ── Slider with tick + range labels
-const RangeSlider = ({ id, min, max, step, value, onChange, marks }) => (
-  <div className="wz-slider">
-    <input
-      id={id}
-      type="range"
-      min={min}
-      max={max}
-      step={step}
-      value={value}
-      onChange={e => onChange(Number(e.target.value))}
-      className="wz-slider-input"
-      style={{ '--pct': ((value - min) / (max - min)) * 100 + '%' }}
-    />
-    <div className="wz-slider-scale">
-      <span>{min}</span>
-      {marks && marks.map((m, i) => <span key={i} className="wz-slider-mark">{m}</span>)}
-      <span>{max}</span>
+const RangeSlider = ({ id, min, max, step, value, onChange, marks }) => {
+  const pct = (v) => ((v - min) / (max - min)) * 100;
+  return (
+    <div className="wz-slider">
+      <input
+        id={id}
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={e => onChange(Number(e.target.value))}
+        className="wz-slider-input"
+        style={{ '--pct': pct(value) + '%' }}
+      />
+      <div className="wz-slider-scale">
+        <span className="wz-slider-tick wz-slider-tick--min">{min}</span>
+        {marks && marks.map((m, i) => (
+          <span key={i} className="wz-slider-tick wz-slider-mark" style={{ left: pct(m) + '%' }}>{m}</span>
+        ))}
+        <span className="wz-slider-tick wz-slider-tick--max">{max}</span>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 Object.assign(window, {
-  Field, DataRow, StatusPill, Card, Callout, ChoiceTile, TextInput, NumberDisplay, RangeSlider,
+  Field, DataRow, StatusPill, Card, Callout, ChoiceTile, TextInput, Select, NumberDisplay, RangeSlider,
 });
 
 
@@ -2592,7 +2647,81 @@ const RegulatoryStep = ({ data, setData, prefilled }) => {
   );
 };
 
-Object.assign(window, { LocationStep, WeatherStep, AirspaceStep, RegulatoryStep });
+/* ── 5. Approvals (country-specific authority sign-off) ────── */
+// Add new deployment countries/partners here — the dropdown scales without
+// layout changes, unlike a tile list.
+const APPROVAL_COUNTRIES = [
+  { value: 'TR', label: 'Turkey' },
+  { value: 'GB', label: 'United Kingdom' },
+  { value: 'JM', label: 'Jamaica' },
+];
+
+const ApprovalsStep = ({ data, setData, prefilled }) => {
+  const country = data.country || 'TR';
+
+  // Resolve the country from the Step 1 launch pin as soon as this step is
+  // reached — operator can still override via the field below.
+  React.useEffect(() => { if (!data.country) setData({ ...data, country: 'TR' }); }, []);
+
+  const selectCountry = (code) => setData({ ...data, country: code });
+  const set = (section, patch) => setData({ ...data, [section]: { ...(data[section] || {}), ...patch } });
+
+  return (
+    <div className="wz-step-body">
+      <Callout tone="info" title="Country of operation">
+        Sky-Fi resolves the country from the launch coordinates set in Step 1, which determines which national airspace authority must sign off. Change it below if that's wrong.
+      </Callout>
+
+      <Field id="APR-COUNTRY" label="Country of operation" required status={country ? 'ok' : 'empty'} helper="Detected from the launch coordinates set in Step 1 — change it if that's wrong.">
+        <Select id="APR-COUNTRY" value={country} onChange={selectCountry} options={APPROVAL_COUNTRIES} />
+      </Field>
+
+      {country === 'TR' && (
+        <Card eyebrow="TURKEY · DGCA (SHGM)" title="Airspace authority confirmation" tight>
+          <div className="wz-check-list">
+            <ChoiceTile
+              multi
+              checked={!!data.tr?.confirmed}
+              onChange={() => set('tr', { confirmed: !data.tr?.confirmed })}
+              label={<>Confirmation received from <code>turkish@caa.com</code></>}
+            />
+          </div>
+        </Card>
+      )}
+
+      {country === 'GB' && (
+        <Card eyebrow="UNITED KINGDOM · UK CAA" title="Operator credentials" tight>
+          <Field id="APR-GB-OPID" label="Operator ID" helper="As registered with the UK CAA." required status={data.gb?.operatorId ? 'ok' : 'empty'}>
+            <TextInput id="APR-GB-OPID" value={data.gb?.operatorId} onChange={v => set('gb', { operatorId: v })} placeholder="e.g. GBR-OP-XXXXXXXX" />
+          </Field>
+          <div className="wz-check-list">
+            <ChoiceTile
+              multi
+              checked={!!data.gb?.soraConfirmed}
+              onChange={() => set('gb', { soraConfirmed: !data.gb?.soraConfirmed })}
+              label="I have a valid SORA or confirmation from the CAA"
+            />
+          </div>
+        </Card>
+      )}
+
+      {country === 'JM' && (
+        <Card eyebrow="JAMAICA · JCAA" title="Airspace authority confirmation" tight>
+          <div className="wz-check-list">
+            <ChoiceTile
+              multi
+              checked={!!data.jm?.confirmed}
+              onChange={() => set('jm', { confirmed: !data.jm?.confirmed })}
+              label={<>Confirmation has been sought from <code>requests@jcaa.com</code></>}
+            />
+          </div>
+        </Card>
+      )}
+    </div>
+  );
+};
+
+Object.assign(window, { LocationStep, WeatherStep, AirspaceStep, RegulatoryStep, ApprovalsStep });
 
 
 /* ===== wizard-steps-input.jsx ===== */
@@ -2602,7 +2731,7 @@ Object.assign(window, { LocationStep, WeatherStep, AirspaceStep, RegulatoryStep 
    (slider), finger signature, risk acceptance.
 ──────────────────────────────────────────────────────────── */
 
-/* ── 5. Photo capture ──────────────────────────────────────── */
+/* ── 6. Photo capture ──────────────────────────────────────── */
 const PhotoStep = ({ data, setData, prefilled }) => {
   const fileRef = React.useRef(null);
   const [photo, setPhoto] = React.useState(data.photo || (prefilled ? { synthetic: true } : null));
@@ -2697,7 +2826,7 @@ const SyntheticSitePhoto = ({ angle }) => {
   );
 };
 
-/* ── 6. Hazards ────────────────────────────────────────────── */
+/* ── 7. Hazards ────────────────────────────────────────────── */
 const HazardsStep = ({ data, setData, prefilled }) => {
   const hazards = data.hazards || {};
   const update = (key, val) => setData({ ...data, hazards: { ...hazards, [key]: val } });
@@ -2763,7 +2892,7 @@ const HazardsStep = ({ data, setData, prefilled }) => {
   );
 };
 
-/* ── 7. Crew ───────────────────────────────────────────────── */
+/* ── 8. Crew ───────────────────────────────────────────────── */
 const CrewStep = ({ data, setData, prefilled }) => {
   const crew = data.crew || (prefilled ? ['lead', 'observer', 'rf', 'liaison'] : []);
   const lead = data.lead || (prefilled ? 'lead' : null);
@@ -2832,7 +2961,7 @@ const CrewStep = ({ data, setData, prefilled }) => {
   );
 };
 
-/* ── 8. Emergency contact ──────────────────────────────────── */
+/* ── 9. Emergency contact ──────────────────────────────────── */
 const ContactStep = ({ data, setData, prefilled }) => {
   const c = data.contact || (prefilled ? {
     name: 'Operations Centre — Ankara',
@@ -2893,13 +3022,13 @@ const ContactStep = ({ data, setData, prefilled }) => {
   );
 };
 
-/* ── 9. Flight parameters (slider) ─────────────────────────── */
+/* ── 10. Flight parameters (slider) ─────────────────────────── */
 const ParametersStep = ({ data, setData, prefilled }) => {
   const altitude = data.altitude ?? (prefilled ? 95 : 80);
   const tether = data.tether ?? (prefilled ? 100 : 100);
   const windowMin = data.windowMin ?? (prefilled ? 45 : 30);
 
-  const update = (k, v) => setData({ ...data, [k]: v, altitude, tether, windowMin });
+  const update = (k, v) => setData({ ...data, [k]: v });
 
   return (
     <div className="wz-step-body">
@@ -2926,13 +3055,13 @@ const ParametersStep = ({ data, setData, prefilled }) => {
 
       <Field id="FP-WINDOW" label="Planned flight window" helper="Sky-Fi will warn at 75% and force return at 100%." required>
         <NumberDisplay value={windowMin} unit="min" />
-        <RangeSlider id="FP-WINDOW" min={15} max={180} step={15} value={windowMin} onChange={v => update('windowMin', v)} marks={[30, 60, 90, 120]} />
+        <RangeSlider id="FP-WINDOW" min={30} max={180} step={15} value={windowMin} onChange={v => update('windowMin', v)} marks={[60, 90, 120, 150]} />
       </Field>
     </div>
   );
 };
 
-/* ── 10. Signature ─────────────────────────────────────────── */
+/* ── 11. Signature ─────────────────────────────────────────── */
 const SignatureStep = ({ data, setData, prefilled }) => {
   const canvasRef = React.useRef(null);
   const [drawing, setDrawing] = React.useState(false);
@@ -3045,7 +3174,7 @@ const SignatureStep = ({ data, setData, prefilled }) => {
   );
 };
 
-/* ── 11. Risk acceptance ───────────────────────────────────── */
+/* ── 12. Risk acceptance ───────────────────────────────────── */
 const RiskStep = ({ data, setData, prefilled, summary }) => {
   const accepted = data.accepted || false;
   const briefingShown = data.briefingShown || false;
@@ -3123,6 +3252,7 @@ const ALL_STEPS = [
   { id: 'weather',    short: 'Weather',       title: 'Environmental conditions',     type: 'review-auto', Comp: () => WeatherStep,  canSkipPrefill: false },
   { id: 'airspace',   short: 'Airspace',      title: 'Airspace clearance',          type: 'review-mix',  Comp: () => AirspaceStep, canSkipPrefill: false },
   { id: 'regulatory', short: 'Compliance',    title: 'Regulatory compliance',       type: 'review-prefilled', Comp: () => RegulatoryStep, canSkipPrefill: false },
+  { id: 'approvals',  short: 'Approvals',     title: 'Deployment approvals',        type: 'review-mix',  Comp: () => ApprovalsStep, canSkipPrefill: false },
   { id: 'photo',      short: 'Site photos',   title: 'Launch site photographs',     type: 'input',    Comp: () => PhotoStep,      canSkipPrefill: true },
   { id: 'hazards',    short: 'Hazards',       title: 'On-site hazard assessment',   type: 'input',    Comp: () => HazardsStep,    canSkipPrefill: true },
   { id: 'crew',       short: 'Crew',          title: 'Operating crew',              type: 'input',    Comp: () => CrewStep,       canSkipPrefill: true },
@@ -3137,6 +3267,12 @@ const STEP_VALIDATORS = {
   weather:    (d) => !!d.agreed,
   airspace:   (d) => d.checks && d.checks.notam && d.checks.ctr && d.checks.mil && d.checks.emcomm,
   regulatory: (d) => !!d.acknowledged,
+  approvals:  (d) => {
+    if (d.country === 'GB') return !!(d.gb && d.gb.operatorId && d.gb.soraConfirmed);
+    if (d.country === 'JM') return !!(d.jm && d.jm.confirmed);
+    if (d.country === 'TR') return !!(d.tr && d.tr.confirmed);
+    return false;
+  },
   photo:      (d) => !!d.photo,
   hazards:    (d) => ['people','power','structures','water','fuel'].every(k => d.hazards && d.hazards[k]),
   crew:       (d) => (d.crew || []).length >= 2 && !!d.lead,
@@ -3149,14 +3285,14 @@ const STEP_VALIDATORS = {
 const App = () => {
   const tweakDefaults = /*EDITMODE-BEGIN*/{
     "theme": "light",
-    "stepCount": 11,
+    "stepCount": 12,
     "prefilledMode": "mixed"
   }/*EDITMODE-END*/;
   const [tweaks, setTweak] = useTweaks(tweakDefaults);
 
   // Step set adjusts based on the count tweak
   const activeSteps = React.useMemo(() => {
-    const n = Math.min(Math.max(tweaks.stepCount || 11, 4), ALL_STEPS.length);
+    const n = Math.min(Math.max(tweaks.stepCount || 12, 4), ALL_STEPS.length);
     // Keep first 3 (location, weather, airspace), last 3 (parameters, signature, risk)
     // when reducing — drop from the middle
     if (n === ALL_STEPS.length) return ALL_STEPS;
@@ -3693,7 +3829,7 @@ const WizardTweaksPanel = ({ tweaks, setTweak }) => (
         label="Steps"
         value={tweaks.stepCount}
         onChange={v => setTweak('stepCount', v)}
-        min={6} max={11} step={1}
+        min={6} max={12} step={1}
         unit=" steps"
       />
       <TweakSelect

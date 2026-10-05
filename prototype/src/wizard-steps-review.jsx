@@ -348,4 +348,78 @@ const RegulatoryStep = ({ data, setData, prefilled }) => {
   );
 };
 
-Object.assign(window, { LocationStep, WeatherStep, AirspaceStep, RegulatoryStep });
+/* ── 5. Approvals (country-specific authority sign-off) ────── */
+// Add new deployment countries/partners here — the dropdown scales without
+// layout changes, unlike a tile list.
+const APPROVAL_COUNTRIES = [
+  { value: 'TR', label: 'Turkey' },
+  { value: 'GB', label: 'United Kingdom' },
+  { value: 'JM', label: 'Jamaica' },
+];
+
+const ApprovalsStep = ({ data, setData, prefilled }) => {
+  const country = data.country || 'TR';
+
+  // Resolve the country from the Step 1 launch pin as soon as this step is
+  // reached — operator can still override via the field below.
+  React.useEffect(() => { if (!data.country) setData({ ...data, country: 'TR' }); }, []);
+
+  const selectCountry = (code) => setData({ ...data, country: code });
+  const set = (section, patch) => setData({ ...data, [section]: { ...(data[section] || {}), ...patch } });
+
+  return (
+    <div className="wz-step-body">
+      <Callout tone="info" title="Country of operation">
+        Sky-Fi resolves the country from the launch coordinates set in Step 1, which determines which national airspace authority must sign off. Change it below if that's wrong.
+      </Callout>
+
+      <Field id="APR-COUNTRY" label="Country of operation" required status={country ? 'ok' : 'empty'} helper="Detected from the launch coordinates set in Step 1 — change it if that's wrong.">
+        <Select id="APR-COUNTRY" value={country} onChange={selectCountry} options={APPROVAL_COUNTRIES} />
+      </Field>
+
+      {country === 'TR' && (
+        <Card eyebrow="TURKEY · DGCA (SHGM)" title="Airspace authority confirmation" tight>
+          <div className="wz-check-list">
+            <ChoiceTile
+              multi
+              checked={!!data.tr?.confirmed}
+              onChange={() => set('tr', { confirmed: !data.tr?.confirmed })}
+              label={<>Confirmation received from <code>turkish@caa.com</code></>}
+            />
+          </div>
+        </Card>
+      )}
+
+      {country === 'GB' && (
+        <Card eyebrow="UNITED KINGDOM · UK CAA" title="Operator credentials" tight>
+          <Field id="APR-GB-OPID" label="Operator ID" helper="As registered with the UK CAA." required status={data.gb?.operatorId ? 'ok' : 'empty'}>
+            <TextInput id="APR-GB-OPID" value={data.gb?.operatorId} onChange={v => set('gb', { operatorId: v })} placeholder="e.g. GBR-OP-XXXXXXXX" />
+          </Field>
+          <div className="wz-check-list">
+            <ChoiceTile
+              multi
+              checked={!!data.gb?.soraConfirmed}
+              onChange={() => set('gb', { soraConfirmed: !data.gb?.soraConfirmed })}
+              label="I have a valid SORA or confirmation from the CAA"
+            />
+          </div>
+        </Card>
+      )}
+
+      {country === 'JM' && (
+        <Card eyebrow="JAMAICA · JCAA" title="Airspace authority confirmation" tight>
+          <div className="wz-check-list">
+            <ChoiceTile
+              multi
+              checked={!!data.jm?.confirmed}
+              onChange={() => set('jm', { confirmed: !data.jm?.confirmed })}
+              label={<>Confirmation has been sought from <code>uavrequests@jcaa.gov.jm</code></>}
+            />
+          </div>
+        </Card>
+      )}
+    </div>
+  );
+};
+
+Object.assign(window, { LocationStep, WeatherStep, AirspaceStep, RegulatoryStep, ApprovalsStep });
